@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rider Dashboard - RideFlow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            padding: 30px 20px;
+            color: white;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin: 10px 0;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+        }
+        
+        .logout-btn {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            right: 20px;
+            padding: 12px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 1.8rem;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .stat-card h3 {
+            color: #666;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stat-card.rides { border-left: 4px solid #667eea; }
+        .stat-card.spent { border-left: 4px solid #48bb78; }
+        .stat-card.wallet { border-left: 4px solid #ed8936; }
+        
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .action-btn {
+            padding: 20px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: #333;
+        }
+        
+        .action-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+        
+        .action-btn i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .action-btn span {
+            font-weight: 600;
+        }
+        
+        /* Recent Rides */
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+        
+        .rides-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .rides-table th,
+        .rides-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .rides-table th {
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+        .status-in-progress { background: #cce5ff; color: #004085; }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">🚗 RideFlow</div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/rider/dashboard" class="nav-link active">📊 Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a href="/rider/book" class="nav-link">🚕 Book a Ride</a>
+            </li>
+            <li class="nav-item">
+                <a href="/rider/history" class="nav-link">📜 Ride History</a>
+            </li>
+            <li class="nav-item">
+                <a href="/rider/wallet" class="nav-link">💳 My Wallet</a>
+            </li>
+        </ul>
+        <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Rider Dashboard</h1>
+            <div class="user-info">
+                <span id="userName">Loading...</span>
+                <div class="user-avatar" id="userAvatar">R</div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card rides">
+                <h3>Total Rides</h3>
+                <div class="stat-value" id="totalRides">-</div>
+            </div>
+            <div class="stat-card spent">
+                <h3>Total Spent</h3>
+                <div class="stat-value" id="totalSpent">PKR -</div>
+            </div>
+            <div class="stat-card wallet">
+                <h3>Wallet Balance</h3>
+                <div class="stat-value" id="walletBalance">PKR -</div>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <a href="/rider/book" class="action-btn">
+                <span style="font-size: 2rem;">🚕</span>
+                <span>Book a Ride</span>
+            </a>
+            <a href="/rider/history" class="action-btn">
+                <span style="font-size: 2rem;">📜</span>
+                <span>View History</span>
+            </a>
+            <a href="/rider/wallet" class="action-btn">
+                <span style="font-size: 2rem;">💳</span>
+                <span>Manage Wallet</span>
+            </a>
+        </div>
+
+        <div class="section">
+            <h2>Recent Rides</h2>
+            <div id="recentRides" class="loading">Loading rides...</div>
+        </div>
+    </div>
+
+    <script>
+        async function loadDashboard() {
+            try {
+                // Load user profile
+                const profileRes = await fetch('/api/rider/profile');
+                const profile = await profileRes.json();
+                
+                document.getElementById('userName').textContent = profile.full_name;
+                document.getElementById('userAvatar').textContent = profile.full_name.charAt(0).toUpperCase();
+                document.getElementById('walletBalance').textContent = `PKR ${parseFloat(profile.wallet_balance || 0).toFixed(0)}`;
+                
+                // Load rides
+                const ridesRes = await fetch('/api/rider/rides');
+                const rides = await ridesRes.json();
+                
+                document.getElementById('totalRides').textContent = rides.length;
+                
+                const totalSpent = rides.reduce((sum, ride) => sum + parseFloat(ride.fare || 0), 0);
+                document.getElementById('totalSpent').textContent = `PKR ${totalSpent.toFixed(0)}`;
+                
+                // Display recent rides
+                const recentContainer = document.getElementById('recentRides');
+                if (rides.length === 0) {
+                    recentContainer.innerHTML = '<p style="text-align:center;color:#666;">No rides yet. Book your first ride!</p>';
+                } else {
+                    const recentRides = rides.slice(0, 5);
+                    recentContainer.innerHTML = `
+                        <table class="rides-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Pickup</th>
+                                    <th>Dropoff</th>
+                                    <th>Driver</th>
+                                    <th>Status</th>
+                                    <th>Fare</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${recentRides.map(ride => `
+                                    <tr>
+                                        <td>${new Date(ride.requested_at).toLocaleDateString()}</td>
+                                        <td>${ride.pickup_city}</td>
+                                        <td>${ride.dropoff}</td>
+                                        <td>${ride.driver_name}</td>
+                                        <td><span class="status-badge status-${ride.ride_status.toLowerCase().replace('_', '-')}">${ride.ride_status}</span></td>
+                                        <td>PKR ${parseFloat(ride.fare).toFixed(0)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+        
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login';
+        }
+        
+        loadDashboard();
+    </script>
+</body>
+</html>
