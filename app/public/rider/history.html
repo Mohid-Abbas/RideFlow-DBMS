@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ride History - RideFlow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            padding: 30px 20px;
+            color: white;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin: 10px 0;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .logout-btn {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            right: 20px;
+            padding: 12px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+        }
+        
+        .header {
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 1.8rem;
+        }
+        
+        .rides-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .rides-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .rides-table th,
+        .rides-table td {
+            padding: 15px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .rides-table th {
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            background: #f8f9fa;
+        }
+        
+        .rides-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+        .status-in-progress { background: #cce5ff; color: #004085; }
+        .status-accepted { background: #e2e3f3; color: #383d7a; }
+        .status-driver-en-route { background: #d1ecf1; color: #0c5460; }
+        
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #666;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 60px;
+            color: #666;
+        }
+        
+        .no-data-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">🚗 RideFlow</div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/rider/dashboard" class="nav-link">📊 Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a href="/rider/book" class="nav-link">🚕 Book a Ride</a>
+            </li>
+            <li class="nav-item">
+                <a href="/rider/history" class="nav-link active">📜 Ride History</a>
+            </li>
+            <li class="nav-item">
+                <a href="/rider/wallet" class="nav-link">💳 My Wallet</a>
+            </li>
+        </ul>
+        <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>📜 Ride History</h1>
+        </div>
+
+        <div class="rides-section">
+            <div id="ridesContainer" class="loading">Loading your ride history...</div>
+        </div>
+    </div>
+
+    <script>
+        async function loadRideHistory() {
+            try {
+                const res = await fetch('/api/rider/rides');
+                const rides = await res.json();
+                
+                const container = document.getElementById('ridesContainer');
+                
+                if (rides.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-data">
+                            <div class="no-data-icon">🚗</div>
+                            <h3>No rides yet</h3>
+                            <p>Book your first ride to see your history here!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <table class="rides-table">
+                        <thead>
+                            <tr>
+                                <th>Ride ID</th>
+                                <th>Date & Time</th>
+                                <th>Pickup</th>
+                                <th>Dropoff</th>
+                                <th>Driver</th>
+                                <th>Vehicle</th>
+                                <th>Distance</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                                <th>Fare</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rides.map(ride => `
+                                <tr>
+                                    <td>#${ride.ride_id}</td>
+                                    <td>${new Date(ride.requested_at).toLocaleString()}</td>
+                                    <td>${ride.pickup_city}</td>
+                                    <td>${ride.dropoff}</td>
+                                    <td>${ride.driver_name}</td>
+                                    <td>${ride.make} ${ride.model}</td>
+                                    <td>${ride.distance_km} km</td>
+                                    <td>${ride.duration_min} min</td>
+                                    <td>
+                                        <span class="status-badge status-${ride.ride_status.toLowerCase().replace(/_/g, '-').replace(/-+/g, '-')}">
+                                            ${ride.ride_status.replace(/_/g, ' ')}
+                                        </span>
+                                    </td>
+                                    <td>PKR ${parseFloat(ride.fare).toFixed(0)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                console.error('Error loading ride history:', error);
+                document.getElementById('ridesContainer').innerHTML = `
+                    <div class="no-data">
+                        <p>Error loading ride history. Please try again.</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login';
+        }
+
+        loadRideHistory();
+    </script>
+</body>
+</html>
