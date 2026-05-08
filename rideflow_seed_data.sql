@@ -197,6 +197,7 @@ INSERT INTO complaints (ride_id, filed_by, against_user, description, comp_statu
 (5, 5, 11, 'Driver took longer route', 'OPEN', DATE_SUB(CURDATE(), INTERVAL 1 DAY));
 
 -- Update driver average ratings based on ratings data
+-- NOTE: WHERE driver_id > 0 added for MySQL safe update mode compatibility
 UPDATE drivers d
 SET avg_rating = (
     SELECT AVG(score)
@@ -207,9 +208,11 @@ total_trips = (
     SELECT COUNT(*)
     FROM rides rd
     WHERE rd.driver_id = d.driver_id AND rd.ride_status = 'COMPLETED'
-);
+)
+WHERE d.driver_id > 0;
 
 -- Update rider wallet balances
+-- NOTE: WHERE user_id > 0 added for MySQL safe update mode compatibility
 UPDATE users 
 SET wallet_balance = CASE user_id
     WHEN 2 THEN 500.00
@@ -218,7 +221,7 @@ SET wallet_balance = CASE user_id
     WHEN 5 THEN 2500.00
     ELSE wallet_balance
 END
-WHERE role = 'RIDER';
+WHERE user_id > 0 AND role = 'RIDER';
 
 SELECT 'Seed data inserted successfully!' AS message;
 SELECT 'Users:', COUNT(*) FROM users;
