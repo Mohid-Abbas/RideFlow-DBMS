@@ -1,7 +1,41 @@
 -- RideFlow Seed Data for Testing
 -- Run this after creating the database schema
+-- NOTE: This file uses DELETE + INSERT pattern to allow re-running without errors
 
 USE rideflow_db;
+
+-- ============================================
+-- CLEAR EXISTING DATA (for clean re-runs)
+-- ============================================
+-- Delete in reverse order to respect foreign key constraints
+DELETE FROM complaints WHERE complaint_id > 0;
+DELETE FROM ratings WHERE rating_id > 0;
+DELETE FROM driver_earnings WHERE earning_id > 0;
+DELETE FROM payments WHERE payment_id > 0;
+DELETE FROM rides WHERE ride_id > 0;
+DELETE FROM vehicles WHERE vehicle_id > 0;
+DELETE FROM drivers WHERE driver_id > 0;
+DELETE FROM promo_codes WHERE promo_id > 0;
+DELETE FROM locations WHERE location_id > 0;
+DELETE FROM fare_rules WHERE rule_id > 0;
+DELETE FROM users WHERE user_id > 0;
+
+-- Reset auto-increment counters (optional, for clean slate)
+ALTER TABLE users AUTO_INCREMENT = 1;
+ALTER TABLE drivers AUTO_INCREMENT = 1;
+ALTER TABLE locations AUTO_INCREMENT = 1;
+ALTER TABLE fare_rules AUTO_INCREMENT = 1;
+ALTER TABLE vehicles AUTO_INCREMENT = 1;
+ALTER TABLE promo_codes AUTO_INCREMENT = 1;
+ALTER TABLE rides AUTO_INCREMENT = 1;
+ALTER TABLE payments AUTO_INCREMENT = 1;
+ALTER TABLE driver_earnings AUTO_INCREMENT = 1;
+ALTER TABLE ratings AUTO_INCREMENT = 1;
+ALTER TABLE complaints AUTO_INCREMENT = 1;
+
+-- ============================================
+-- INSERT FRESH DATA
+-- ============================================
 
 -- Insert Users (Riders, Drivers, Admin)
 -- Passwords are hashed using bcrypt (password: 'password')
@@ -90,7 +124,13 @@ INSERT INTO rides (rider_id, driver_id, vehicle_id, pickup_loc_id, dropoff_loc_i
 (2, 1, 1, 1, 5, 1, DATE_SUB(NOW(), INTERVAL 30 MINUTE), NULL, 0, 0, 'IN_PROGRESS', 175.00),
 (4, 5, 7, 4, 2, 1, DATE_SUB(NOW(), INTERVAL 45 MINUTE), NULL, 0, 0, 'DRIVER_EN_ROUTE', 192.50),
 -- Requested rides
-(5, 1, 1, 6, 1, 1, DATE_SUB(NOW(), INTERVAL 5 MINUTE), NULL, 0, 0, 'REQUESTED', 165.00);
+(5, 1, 1, 6, 1, 1, DATE_SUB(NOW(), INTERVAL 5 MINUTE), NULL, 0, 0, 'REQUESTED', 165.00),
+-- Additional rides for driver 10 (to test low rating trigger)
+(2, 10, 15, 1, 3, 1, DATE_SUB(CURDATE(), INTERVAL 10 DAY), NULL, 30, 9.5, 'COMPLETED', 250.00),
+(3, 10, 16, 2, 5, 1, DATE_SUB(CURDATE(), INTERVAL 9 DAY), NULL, 25, 8.0, 'COMPLETED', 220.00),
+(4, 10, 17, 3, 1, 1, DATE_SUB(CURDATE(), INTERVAL 8 DAY), NULL, 40, 13.5, 'COMPLETED', 310.00),
+(5, 10, 18, 4, 6, 1, DATE_SUB(CURDATE(), INTERVAL 7 DAY), NULL, 20, 6.8, 'COMPLETED', 195.00),
+(2, 10, 19, 1, 4, 1, DATE_SUB(CURDATE(), INTERVAL 6 DAY), NULL, 35, 11.2, 'COMPLETED', 275.00);
 
 -- Insert Payments
 INSERT INTO payments (ride_id, rider_id, promo_id, payment_method, amount, payment_status, txn_date, promo_discount) VALUES
@@ -101,7 +141,13 @@ INSERT INTO payments (ride_id, rider_id, promo_id, payment_method, amount, payme
 (5, 5, NULL, 'CARD', 182.50, 'PAID', DATE_SUB(CURDATE(), INTERVAL 1 DAY), 0.00),
 (6, 2, NULL, 'CASH', 0.00, 'FAILED', DATE_SUB(CURDATE(), INTERVAL 4 DAY), 0.00),
 (8, 4, NULL, 'WALLET', 192.50, 'PENDING', NOW(), 0.00),
-(9, 5, 3, 'CASH', 148.50, 'PENDING', NOW(), 16.50);
+(9, 5, 3, 'CASH', 148.50, 'PENDING', NOW(), 16.50),
+-- Payments for driver 10 rides (20-24)
+(20, 2, NULL, 'CARD', 200.00, 'PAID', DATE_SUB(CURDATE(), INTERVAL 10 DAY), 50.00),
+(21, 3, NULL, 'WALLET', 176.00, 'PAID', DATE_SUB(CURDATE(), INTERVAL 9 DAY), 44.00),
+(22, 4, NULL, 'CASH', 248.00, 'PAID', DATE_SUB(CURDATE(), INTERVAL 8 DAY), 62.00),
+(23, 5, NULL, 'CARD', 156.00, 'PAID', DATE_SUB(CURDATE(), INTERVAL 7 DAY), 39.00),
+(24, 2, NULL, 'WALLET', 220.00, 'PAID', DATE_SUB(CURDATE(), INTERVAL 6 DAY), 55.00);
 
 -- Insert Driver Earnings
 INSERT INTO driver_earnings (ride_id, driver_id, gross_fare, commission_pct, net_earning, payout_status) VALUES
@@ -111,7 +157,13 @@ INSERT INTO driver_earnings (ride_id, driver_id, gross_fare, commission_pct, net
 (4, 3, 280.00, 20.00, 224.00, 'PAID'),
 (5, 5, 182.50, 20.00, 146.00, 'PAID'),
 (7, 1, 175.00, 20.00, 140.00, 'PENDING'),
-(8, 5, 192.50, 20.00, 154.00, 'PENDING');
+(8, 5, 192.50, 20.00, 154.00, 'PENDING'),
+-- Driver earnings for driver 10 (rides 20-24)
+(20, 10, 250.00, 20.00, 200.00, 'PAID'),
+(21, 10, 220.00, 20.00, 176.00, 'PAID'),
+(22, 10, 310.00, 20.00, 248.00, 'PAID'),
+(23, 10, 195.00, 20.00, 156.00, 'PAID'),
+(24, 10, 275.00, 20.00, 220.00, 'PAID');
 
 -- Insert Ratings
 INSERT INTO ratings (ride_id, rated_by, rated_user, score, comment, rated_at) VALUES
