@@ -14,6 +14,8 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -38,6 +40,7 @@ app.use(session({
 // Database connection pool
 const dbConfig = {
     host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 3306,
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'rideflow_db',
@@ -45,6 +48,26 @@ const dbConfig = {
     connectionLimit: 10,
     queueLimit: 0
 };
+
+// Add SSL for cloud databases (Aiven, PlanetScale, etc.)
+if (process.env.DB_SSL === 'true') {
+    if (process.env.DB_SSL_CA_PATH) {
+        // Aiven requires CA certificate
+        const caPath = path.join(__dirname, process.env.DB_SSL_CA_PATH);
+        if (fs.existsSync(caPath)) {
+            dbConfig.ssl = {
+                ca: fs.readFileSync(caPath),
+                rejectUnauthorized: true
+            };
+        } else {
+            console.warn('⚠️  CA certificate not found at:', caPath);
+            dbConfig.ssl = { rejectUnauthorized: false };
+        }
+    } else {
+        // PlanetScale or other SSL without cert
+        dbConfig.ssl = { rejectUnauthorized: false };
+    }
+}
 
 const pool = mysql.createPool(dbConfig);
 
@@ -730,15 +753,40 @@ app.get('/api/admin/city-revenue', requireRole('ADMIN'), async (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
+    // Detect database type
+    let dbType = 'Local MySQL';
+    if (process.env.DB_HOST && !process.env.DB_HOST.includes('localhost')) {
+        if (process.env.DB_HOST.includes('aiven')) {
+            dbType = 'Aiven MySQL (Cloud)';
+        } else if (process.env.DB_HOST.includes('psdb')) {
+            dbType = 'PlanetScale (Cloud)';
+        } else {
+            dbType = 'Cloud MySQL';
+        }
+    }
+
     console.log(`=================================`);
-    console.log(`  RideFlow Server Running`);
+    console.log(`  🚗 RideFlow Server Running`);
     console.log(`  Port: ${PORT}`);
     console.log(`  Database: ${dbConfig.database}`);
+    console.log(`  Type: ${dbType}`);
+    console.log(`=================================`);
+    
+    // Test database connection
+    try {
+        const conn = await pool.getConnection();
+        const [rows] = await conn.execute('SELECT COUNT(*) as count FROM users');
+        console.log(`  ✅ Database connected: ${rows[0].count} users found`);
+        conn.release();
+    } catch (err) {
+        console.log(`  ⚠️  Database connection issue: ${err.message}`);
+    }
+    
     console.log(`=================================`);
     console.log(`  URLs:`);
-    console.log(`  - Login: http://localhost:${PORT}/login`);
-    console.log(`  - Rider Dashboard: http://localhost:${PORT}/rider/dashboard`);
+    console.log(`  - Modern Login:    http://localhost:${PORT}/`);
+    console.log(`  - Rider Dashboard: http://localhost:${PORT}/rider/dashboard-modern`);
     console.log(`  - Driver Dashboard: http://localhost:${PORT}/driver/dashboard`);
     console.log(`  - Admin Dashboard: http://localhost:${PORT}/admin/dashboard`);
     console.log(`=================================`);
