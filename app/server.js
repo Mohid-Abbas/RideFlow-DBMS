@@ -147,6 +147,10 @@ app.get('/rider/book', requireRole('RIDER'), (req, res) => {
     res.sendFile(__dirname + '/public/rider/book.html');
 });
 
+app.get('/rider/book-with-maps', requireRole('RIDER'), (req, res) => {
+    res.sendFile(__dirname + '/public/rider/book-with-maps.html');
+});
+
 app.get('/rider/history', requireRole('RIDER'), (req, res) => {
     res.sendFile(__dirname + '/public/rider/history.html');
 });
@@ -210,6 +214,115 @@ app.post('/api/rider/book', requireRole('RIDER'), async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+});
+
+// Maps-based booking - creates locations from Google Maps data
+app.post('/api/rider/book-with-maps', requireRole('RIDER'), async (req, res) => {
+    const { 
+        pickup_address, pickup_lat, pickup_lng,
+        dropoff_address, dropoff_lat, dropoff_lng,
+        vehicle_type, distance_km, duration_min, estimated_fare
+    } = req.body;
+    
+    const conn = await pool.getConnection();
+    
+    try {
+        await conn.beginTransaction();
+        
+        // 1. Create or get pickup location
+        const [pickupResult] = await conn.execute(
+            `INSERT INTO locations (latitude, longitude, city, address, label) 
+             VALUES (?, ?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE location_id=LAST_INSERT_ID(location_id)`,
+            [pickup_lat, pickup_lng, 'Auto-Detected', pickup_address, 'Pickup']
+        );
+        const pickup_loc_id = pickupResult.insertId;
+        
+        // 2. Create or get dropoff location
+        const [dropoffResult] = await conn.execute(
+            `INSERT INTO locations (latitude, longitude, city, address, label) 
+             VALUES (?, ?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE location_id=LAST_INSERT_ID(location_id)`,
+            [dropoff_lat, dropoff_lng, 'Auto-Detected', dropoff_address, 'Dropoff']
+        );
+        const dropoff_loc_id = dropoffResult.insertId;
+        
+        // 3. Get fare rule for the vehicle type
+        const [fareRules] = await conn.execute(
+            'SELECT rule_id FROM fare_rules WHERE vehicle_type = ?',
+            [vehicle_type]
+        );
+        
+        if (fareRules.length === 0) {
+            await conn.rollback();
+            return res.status(400).json({ error: 'Invalid vehicle type' });
+        }
+        
+        const fare_rule_id = fareRules[0].rule_id;
+        
+        // 4. Assign an available driver
+        const [drivers] = await conn.execute(
+            `SELECT d.driver_id FROM drivers d
+             JOIN vehicles v ON d.driver_id = v.driver_id
+             WHERE d.avail_status = 'ONLINE' 
+             AND d.verif_status = 'VERIFIED'
+             AND v.vehicle_type = ?
+             AND v.verif_status = 'VERIFIED'
+             ORDER BY RAND()
+             LIMIT 1`,
+            [vehicle_type]
+        );
+        
+        if (drivers.length === 0) {
+            await conn.rollback();
+            return res.status(400).json({ error: 'No available drivers for this vehicle type' });
+        }
+        
+        const driver_id = drivers[0].driver_id;
+        
+        // 5. Get a vehicle for the driver
+        const [vehicles] = await conn.execute(
+            `SELECT vehicle_id FROM vehicles 
+             WHERE driver_id = ? AND vehicle_type = ? AND verif_status = 'VERIFIED'
+             LIMIT 1`,
+            [driver_id, vehicle_type]
+        );
+        
+        const vehicle_id = vehicles[0].vehicle_id;
+        
+        // 6. Create the ride
+        const [rideResult] = await conn.execute(
+            `INSERT INTO rides (rider_id, driver_id, vehicle_id, pickup_loc_id, dropoff_loc_id, 
+                               fare_rule_id, distance_km, duration_min, ride_status, fare)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'REQUESTED', ?)`,
+            [req.session.userId, driver_id, vehicle_id, pickup_loc_id, dropoff_loc_id,
+             fare_rule_id, distance_km, duration_min, estimated_fare]
+        );
+        
+        const ride_id = rideResult.insertId;
+        
+        // 7. Update driver status
+        await conn.execute(
+            "UPDATE drivers SET avail_status = 'ON_TRIP' WHERE driver_id = ?",
+            [driver_id]
+        );
+        
+        await conn.commit();
+        
+        res.json({ 
+            success: true, 
+            ride_id: ride_id,
+            estimated_fare: estimated_fare,
+            driver_assigned: true
+        });
+        
+    } catch (error) {
+        await conn.rollback();
+        console.error('Maps booking error:', error);
+        res.status(500).json({ error: error.message });
+    } finally {
+        conn.release();
     }
 });
 
