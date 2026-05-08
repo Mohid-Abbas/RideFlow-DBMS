@@ -126,11 +126,12 @@ INSERT INTO rides (rider_id, driver_id, vehicle_id, pickup_loc_id, dropoff_loc_i
 -- Requested rides
 (5, 1, 1, 6, 1, 1, DATE_SUB(NOW(), INTERVAL 5 MINUTE), NULL, 0, 0, 'REQUESTED', 165.00),
 -- Additional rides for driver 4 (Rashid Mehmood, user_id 10) to test low rating trigger
-(2, 4, 15, 1, 3, 1, DATE_SUB(CURDATE(), INTERVAL 10 DAY), NULL, 30, 9.5, 'COMPLETED', 250.00),
-(3, 4, 16, 2, 5, 1, DATE_SUB(CURDATE(), INTERVAL 9 DAY), NULL, 25, 8.0, 'COMPLETED', 220.00),
-(4, 4, 17, 3, 1, 1, DATE_SUB(CURDATE(), INTERVAL 8 DAY), NULL, 40, 13.5, 'COMPLETED', 310.00),
-(5, 4, 18, 4, 6, 1, DATE_SUB(CURDATE(), INTERVAL 7 DAY), NULL, 20, 6.8, 'COMPLETED', 195.00),
-(2, 4, 19, 1, 4, 1, DATE_SUB(CURDATE(), INTERVAL 6 DAY), NULL, 35, 11.2, 'COMPLETED', 275.00);
+-- Using vehicle_id 6 (United US-125 bike) which belongs to driver 4
+(2, 4, 6, 1, 3, 1, DATE_SUB(CURDATE(), INTERVAL 10 DAY), NULL, 30, 9.5, 'COMPLETED', 250.00),
+(3, 4, 6, 2, 5, 1, DATE_SUB(CURDATE(), INTERVAL 9 DAY), NULL, 25, 8.0, 'COMPLETED', 220.00),
+(4, 4, 6, 3, 1, 1, DATE_SUB(CURDATE(), INTERVAL 8 DAY), NULL, 40, 13.5, 'COMPLETED', 310.00),
+(5, 4, 6, 4, 6, 1, DATE_SUB(CURDATE(), INTERVAL 7 DAY), NULL, 20, 6.8, 'COMPLETED', 195.00),
+(2, 4, 6, 1, 4, 1, DATE_SUB(CURDATE(), INTERVAL 6 DAY), NULL, 35, 11.2, 'COMPLETED', 275.00);
 
 -- Insert Payments
 INSERT INTO payments (ride_id, rider_id, promo_id, payment_method, amount, payment_status, txn_date, promo_discount) VALUES
