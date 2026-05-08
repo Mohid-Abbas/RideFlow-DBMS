@@ -10,6 +10,7 @@ CREATE TABLE users (
   password_hash VARCHAR(255) NOT NULL,
   role VARCHAR(20) NOT NULL DEFAULT 'RIDER',
   acc_status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+  wallet_balance DECIMAL(12,2) NOT NULL DEFAULT 0.00,
   reg_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT uk_users_email UNIQUE (email),
   CONSTRAINT uk_users_phone UNIQUE (phone),
