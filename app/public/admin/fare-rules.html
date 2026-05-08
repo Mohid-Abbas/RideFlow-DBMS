@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fare Rules - RideFlow Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            padding: 30px 20px;
+            color: white;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin: 10px 0;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .logout-btn {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            right: 20px;
+            padding: 12px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+        }
+        
+        .header {
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 1.8rem;
+        }
+        
+        .fare-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        
+        .fare-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .fare-card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .form-group input[type="number"],
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .input-group {
+            display: flex;
+            align-items: center;
+        }
+        
+        .input-group input {
+            flex: 1;
+        }
+        
+        .input-group span {
+            padding: 0 15px;
+            color: #666;
+        }
+        
+        .surge-toggle {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 30px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #667eea;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+        
+        .btn-save {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn-save:hover {
+            transform: translateY(-2px);
+        }
+        
+        .calculation-example {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .calculation-example h4 {
+            color: #666;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .calculation-example p {
+            color: #333;
+            font-size: 0.95rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .success-message {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">🚗 RideFlow</div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/admin/dashboard" class="nav-link">📊 Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/users" class="nav-link">👥 Users</a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/vehicles" class="nav-link">🚗 Vehicles</a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/fare-rules" class="nav-link active">💰 Fare Rules</a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/active-rides" class="nav-link">🚨 Active Rides</a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/reports" class="nav-link">📈 Reports</a>
+            </li>
+        </ul>
+        <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>💰 Fare Rules Configuration</h1>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            Fare rules updated successfully!
+        </div>
+
+        <div class="fare-cards" id="fareCards">
+            <div class="loading">Loading fare rules...</div>
+        </div>
+    </div>
+
+    <script>
+        let fareRules = [];
+
+        async function loadFareRules() {
+            try {
+                const res = await fetch('/api/admin/fare-rules');
+                fareRules = await res.json();
+                renderFareCards();
+            } catch (error) {
+                console.error('Error loading fare rules:', error);
+            }
+        }
+
+        function renderFareCards() {
+            const container = document.getElementById('fareCards');
+            
+            const icons = {
+                'ECONOMY': '🚗',
+                'PREMIUM': '🚙',
+                'BIKE': '🏍️'
+            };
+            
+            container.innerHTML = fareRules.map(rule => `
+                <div class="fare-card">
+                    <h2>${icons[rule.vehicle_type] || '🚗'} ${rule.vehicle_type}</h2>
+                    
+                    <div class="form-group">
+                        <label>Base Rate</label>
+                        <div class="input-group">
+                            <input type="number" id="base_${rule.rule_id}" value="${rule.base_rate}" step="0.01">
+                            <span>PKR</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Per KM Rate</label>
+                        <div class="input-group">
+                            <input type="number" id="perkm_${rule.rule_id}" value="${rule.per_km_rate}" step="0.01">
+                            <span>PKR</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Per Minute Rate</label>
+                        <div class="input-group">
+                            <input type="number" id="permin_${rule.rule_id}" value="${rule.per_min_rate}" step="0.01">
+                            <span>PKR</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Surge Multiplier</label>
+                        <div class="input-group">
+                            <input type="number" id="surge_${rule.rule_id}" value="${rule.surge_multiplier}" step="0.01" min="1">
+                            <span>x</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Surge Pricing</label>
+                        <div class="surge-toggle">
+                            <label class="switch">
+                                <input type="checkbox" id="surge_active_${rule.rule_id}" ${rule.is_surge_active ? 'checked' : ''}>
+                                <span class="slider"></span>
+                            </label>
+                            <span>Enable surge pricing</span>
+                        </div>
+                    </div>
+                    
+                    <div class="calculation-example">
+                        <h4>Sample Calculation (5km, 15min)</h4>
+                        <p id="calc_${rule.rule_id}">
+                            Base: PKR ${rule.base_rate} + 
+                            Distance: PKR ${(rule.per_km_rate * 5).toFixed(2)} + 
+                            Time: PKR ${(rule.per_min_rate * 15).toFixed(2)} = 
+                            <strong>PKR ${(parseFloat(rule.base_rate) + rule.per_km_rate * 5 + rule.per_min_rate * 15).toFixed(2)}</strong>
+                        </p>
+                    </div>
+                    
+                    <button class="btn-save" onclick="saveFareRule(${rule.rule_id})">
+                        Save Changes
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function saveFareRule(ruleId) {
+            const data = {
+                rule_id: ruleId,
+                base_rate: parseFloat(document.getElementById(`base_${ruleId}`).value),
+                per_km_rate: parseFloat(document.getElementById(`perkm_${ruleId}`).value),
+                per_min_rate: parseFloat(document.getElementById(`permin_${ruleId}`).value),
+                surge_multiplier: parseFloat(document.getElementById(`surge_${ruleId}`).value),
+                is_surge_active: document.getElementById(`surge_active_${ruleId}`).checked
+            };
+            
+            try {
+                const res = await fetch('/api/admin/fare-rule', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (res.ok) {
+                    document.getElementById('successMessage').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('successMessage').style.display = 'none';
+                    }, 3000);
+                    loadFareRules();
+                }
+            } catch (error) {
+                console.error('Error saving fare rule:', error);
+                alert('Failed to save changes');
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login';
+        }
+
+        loadFareRules();
+    </script>
+</body>
+</html>
