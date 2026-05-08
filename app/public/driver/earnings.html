@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Earnings - RideFlow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(180deg, #48bb78 0%, #38a169 100%);
+            padding: 30px 20px;
+            color: white;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin: 10px 0;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .logout-btn {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            right: 20px;
+            padding: 12px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+        }
+        
+        .header {
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 1.8rem;
+        }
+        
+        .earnings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .earnings-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .earnings-card h3 {
+            color: #666;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        
+        .earnings-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #48bb78;
+        }
+        
+        .earnings-card.primary {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+        }
+        
+        .earnings-card.primary h3 {
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .earnings-card.primary .earnings-value {
+            color: white;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+        
+        .earnings-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .earnings-table th,
+        .earnings-table td {
+            padding: 15px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .earnings-table th {
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            background: #f8f9fa;
+        }
+        
+        .earnings-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .payout-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .status-paid { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-held { background: #f8d7da; color: #721c24; }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .commission-note {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">🚗 RideFlow</div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/driver/dashboard" class="nav-link">📊 Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a href="/driver/earnings" class="nav-link active">💰 Earnings</a>
+            </li>
+            <li class="nav-item">
+                <a href="/driver/history" class="nav-link">📜 Trip History</a>
+            </li>
+        </ul>
+        <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>💰 My Earnings</h1>
+        </div>
+
+        <div class="earnings-grid">
+            <div class="earnings-card primary">
+                <h3>Total Earnings</h3>
+                <div class="earnings-value" id="totalEarnings">PKR 0</div>
+            </div>
+            <div class="earnings-card">
+                <h3>This Week</h3>
+                <div class="earnings-value" id="weekEarnings">PKR 0</div>
+            </div>
+            <div class="earnings-card">
+                <h3>This Month</h3>
+                <div class="earnings-value" id="monthEarnings">PKR 0</div>
+            </div>
+            <div class="earnings-card">
+                <h3>Pending Payout</h3>
+                <div class="earnings-value" id="pendingPayout">PKR 0</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Earnings Breakdown</h2>
+            <div id="earningsContainer" class="loading">Loading earnings...</div>
+        </div>
+    </div>
+
+    <script>
+        async function loadEarnings() {
+            try {
+                const res = await fetch('/api/driver/earnings');
+                const earnings = await res.json();
+                
+                // Calculate totals
+                const totalEarnings = earnings.reduce((sum, e) => sum + parseFloat(e.net_earning || 0), 0);
+                const pendingPayout = earnings
+                    .filter(e => e.payout_status === 'PENDING')
+                    .reduce((sum, e) => sum + parseFloat(e.net_earning || 0), 0);
+                
+                // This week earnings
+                const oneWeekAgo = new Date();
+                oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+                const weekEarnings = earnings
+                    .filter(e => new Date(e.earned_at) >= oneWeekAgo)
+                    .reduce((sum, e) => sum + parseFloat(e.net_earning || 0), 0);
+                
+                // This month earnings
+                const oneMonthAgo = new Date();
+                oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+                const monthEarnings = earnings
+                    .filter(e => new Date(e.earned_at) >= oneMonthAgo)
+                    .reduce((sum, e) => sum + parseFloat(e.net_earning || 0), 0);
+                
+                document.getElementById('totalEarnings').textContent = `PKR ${totalEarnings.toFixed(0)}`;
+                document.getElementById('weekEarnings').textContent = `PKR ${weekEarnings.toFixed(0)}`;
+                document.getElementById('monthEarnings').textContent = `PKR ${monthEarnings.toFixed(0)}`;
+                document.getElementById('pendingPayout').textContent = `PKR ${pendingPayout.toFixed(0)}`;
+                
+                // Display earnings table
+                const container = document.getElementById('earningsContainer');
+                
+                if (earnings.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;color:#666;">No earnings yet. Complete rides to earn!</p>';
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <table class="earnings-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Ride ID</th>
+                                <th>Gross Fare</th>
+                                <th>Commission</th>
+                                <th>Your Earning</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${earnings.map(e => `
+                                <tr>
+                                    <td>${new Date(e.earned_at).toLocaleDateString()}</td>
+                                    <td>#${e.ride_id}</td>
+                                    <td>PKR ${parseFloat(e.gross_fare).toFixed(0)}</td>
+                                    <td>${e.commission_pct}%</td>
+                                    <td><strong>PKR ${parseFloat(e.net_earning).toFixed(0)}</strong></td>
+                                    <td>
+                                        <span class="payout-status status-${e.payout_status.toLowerCase()}">
+                                            ${e.payout_status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <p class="commission-note">* Platform deducts 20% commission from each fare</p>
+                `;
+                
+            } catch (error) {
+                console.error('Error loading earnings:', error);
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login';
+        }
+
+        loadEarnings();
+    </script>
+</body>
+</html>
