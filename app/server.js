@@ -73,13 +73,24 @@ function requireRole(role) {
 // Home / Login
 app.get('/', (req, res) => {
     if (req.session.userId) {
-        return res.redirect('/dashboard');
+        // Redirect based on role
+        const roleRedirects = {
+            'RIDER': '/rider/dashboard-modern',
+            'DRIVER': '/driver/dashboard',
+            'ADMIN': '/admin/dashboard',
+            'SUPER_ADMIN': '/admin/dashboard'
+        };
+        return res.redirect(roleRedirects[req.session.role] || '/login-modern');
     }
-    res.redirect('/login');
+    res.redirect('/login-modern');
 });
 
 app.get('/login', (req, res) => {
     res.sendFile(__dirname + '/public/login.html');
+});
+
+app.get('/login-modern', (req, res) => {
+    res.sendFile(__dirname + '/public/login-modern.html');
 });
 
 // Authentication API
@@ -141,6 +152,10 @@ app.get('/dashboard', requireAuth, (req, res) => {
 
 app.get('/rider/dashboard', requireRole('RIDER'), (req, res) => {
     res.sendFile(__dirname + '/public/rider/dashboard.html');
+});
+
+app.get('/rider/dashboard-modern', requireRole('RIDER'), (req, res) => {
+    res.sendFile(__dirname + '/public/rider/dashboard-modern.html');
 });
 
 app.get('/rider/book', requireRole('RIDER'), (req, res) => {
