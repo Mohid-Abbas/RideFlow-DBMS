@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Users - RideFlow Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            padding: 30px 20px;
+            color: white;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin: 10px 0;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .logout-btn {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            right: 20px;
+            padding: 12px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+        }
+        
+        .header {
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 1.8rem;
+        }
+        
+        .filter-bar {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-bar input,
+        .filter-bar select {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 15px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .data-table th {
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            background: #f8f9fa;
+        }
+        
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .status-active { background: #d4edda; color: #155724; }
+        .status-suspended { background: #fff3cd; color: #856404; }
+        .status-banned { background: #f8d7da; color: #721c24; }
+        .status-verified { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
+        
+        .role-badge {
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .role-rider { background: #e0e7ff; color: #4338ca; }
+        .role-driver { background: #d1fae5; color: #065f46; }
+        .role-admin { background: #fee2e2; color: #991b1b; }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .btn-verify {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-suspend {
+            background: #ed8936;
+            color: white;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">🚗 RideFlow</div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/admin/dashboard" class="nav-link">📊 Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/users" class="nav-link active">👥 Users</a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/vehicles" class="nav-link">🚗 Vehicles</a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/fare-rules" class="nav-link">💰 Fare Rules</a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/active-rides" class="nav-link">🚨 Active Rides</a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/reports" class="nav-link">📈 Reports</a>
+            </li>
+        </ul>
+        <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>👥 Manage Users</h1>
+        </div>
+
+        <div class="filter-bar">
+            <input type="text" id="searchInput" placeholder="Search users...">
+            <select id="roleFilter">
+                <option value="">All Roles</option>
+                <option value="RIDER">Riders</option>
+                <option value="DRIVER">Drivers</option>
+                <option value="ADMIN">Admins</option>
+            </select>
+            <select id="statusFilter">
+                <option value="">All Status</option>
+                <option value="ACTIVE">Active</option>
+                <option value="SUSPENDED">Suspended</option>
+                <option value="BANNED">Banned</option>
+            </select>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('riders')">Riders</button>
+            <button class="tab" onclick="showTab('drivers')">Drivers</button>
+            <button class="tab" onclick="showTab('all')">All Users</button>
+        </div>
+
+        <div class="section">
+            <div id="usersContainer" class="loading">Loading users...</div>
+        </div>
+    </div>
+
+    <script>
+        let allUsers = [];
+        let currentTab = 'riders';
+
+        async function loadUsers() {
+            try {
+                const res = await fetch('/api/admin/users');
+                allUsers = await res.json();
+                renderUsers();
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        function showTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            renderUsers();
+        }
+
+        function renderUsers() {
+            const container = document.getElementById('usersContainer');
+            
+            let filtered = allUsers;
+            
+            // Filter by tab
+            if (currentTab === 'riders') {
+                filtered = allUsers.filter(u => u.role === 'RIDER');
+            } else if (currentTab === 'drivers') {
+                filtered = allUsers.filter(u => u.role === 'DRIVER');
+            }
+            
+            // Apply search filter
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm) {
+                filtered = filtered.filter(u => 
+                    u.full_name.toLowerCase().includes(searchTerm) ||
+                    u.email.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // Apply role filter
+            const roleFilter = document.getElementById('roleFilter').value;
+            if (roleFilter) {
+                filtered = filtered.filter(u => u.role === roleFilter);
+            }
+            
+            // Apply status filter
+            const statusFilter = document.getElementById('statusFilter').value;
+            if (statusFilter) {
+                filtered = filtered.filter(u => u.acc_status === statusFilter);
+            }
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:#666;">No users found</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Role</th>
+                            <th>Account Status</th>
+                            <th>Joined</th>
+                            ${currentTab === 'drivers' ? '<th>Verification</th><th>Rating</th>' : ''}
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filtered.map(user => `
+                            <tr>
+                                <td>#${user.user_id}</td>
+                                <td>${user.full_name}</td>
+                                <td>${user.email}</td>
+                                <td>${user.phone}</td>
+                                <td>
+                                    <span class="role-badge role-${user.role.toLowerCase()}">
+                                        ${user.role}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-${user.acc_status.toLowerCase()}">
+                                        ${user.acc_status}
+                                    </span>
+                                </td>
+                                <td>${new Date(user.reg_date).toLocaleDateString()}</td>
+                                ${currentTab === 'drivers' ? `
+                                    <td>
+                                        <span class="status-badge status-${(user.verif_status || 'PENDING').toLowerCase()}">
+                                            ${user.verif_status || 'N/A'}
+                                        </span>
+                                    </td>
+                                    <td>⭐ ${user.avg_rating || '0.0'}</td>
+                                ` : ''}
+                                <td>
+                                    ${user.acc_status === 'ACTIVE' ? 
+                                        `<button class="btn btn-suspend" onclick="suspendUser(${user.user_id})">Suspend</button>` :
+                                        `<button class="btn btn-verify" onclick="activateUser(${user.user_id})">Activate</button>`
+                                    }
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function suspendUser(userId) {
+            // Implement suspend functionality
+            alert('User suspended (demo)');
+        }
+
+        function activateUser(userId) {
+            // Implement activate functionality
+            alert('User activated (demo)');
+        }
+
+        // Filter listeners
+        document.getElementById('searchInput').addEventListener('input', renderUsers);
+        document.getElementById('roleFilter').addEventListener('change', renderUsers);
+        document.getElementById('statusFilter').addEventListener('change', renderUsers);
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login';
+        }
+
+        loadUsers();
+    </script>
+</body>
+</html>
