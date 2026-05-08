@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rider Dashboard - RideFlow</title>
+    <link rel="stylesheet" href="/css/modern-theme.css">
+    <style>
+        /* Dashboard Layout */
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+            background: var(--bg-primary);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: var(--space-xl);
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-2xl);
+            padding: var(--space-md) var(--space-lg);
+            background: var(--bg-card);
+            border: var(--border-glass);
+            border-radius: var(--border-radius-lg);
+        }
+
+        .page-title h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-title p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+        }
+
+        .notification-btn {
+            width: 45px;
+            height: 45px;
+            background: var(--bg-glass);
+            border: var(--border-glass);
+            border-radius: var(--border-radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+
+        .notification-btn:hover {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: var(--primary-dark);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: var(--danger-gradient);
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg-glass);
+            border: var(--border-glass);
+            border-radius: var(--border-radius-xl);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-lg);
+            margin-bottom: var(--space-2xl);
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: var(--border-glass);
+            border-radius: var(--border-radius-lg);
+            padding: var(--space-xl);
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-normal);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+        }
+
+        .stat-card.primary::before {
+            background: var(--primary-gradient);
+        }
+
+        .stat-card.success::before {
+            background: var(--success-gradient);
+        }
+
+        .stat-card.warning::before {
+            background: var(--warning-gradient);
+        }
+
+        .stat-card.secondary::before {
+            background: var(--secondary-gradient);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-glow-sm);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--border-radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: var(--space-md);
+        }
+
+        .stat-card.primary .stat-icon {
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .stat-card.success .stat-icon {
+            background: rgba(74, 222, 128, 0.2);
+        }
+
+        .stat-card.warning .stat-icon {
+            background: rgba(251, 191, 36, 0.2);
+        }
+
+        .stat-card.secondary .stat-icon {
+            background: rgba(244, 114, 182, 0.2);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: var(--space-xs);
+        }
+
+        .stat-card.primary .stat-value {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-card.success .stat-value {
+            color: #4ade80;
+        }
+
+        .stat-card.warning .stat-value {
+            color: #fbbf24;
+        }
+
+        .stat-card.secondary .stat-value {
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--space-xl);
+        }
+
+        /* Recent Rides */
+        .rides-section {
+            background: var(--bg-card);
+            border: var(--border-glass);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-lg) var(--space-xl);
+            border-bottom: var(--border-glass);
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .btn-view-all {
+            color: var(--primary-dark);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            transition: gap var(--transition-fast);
+        }
+
+        .btn-view-all:hover {
+            gap: var(--space-sm);
+        }
+
+        .ride-list {
+            padding: var(--space-md);
+        }
+
+        .ride-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            border-radius: var(--border-radius-md);
+            transition: all var(--transition-fast);
+            margin-bottom: var(--space-sm);
+        }
+
+        .ride-item:hover {
+            background: var(--bg-glass);
+        }
+
+        .ride-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--bg-glass);
+            border: var(--border-glass);
+            border-radius: var(--border-radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .ride-details {
+            flex: 1;
+        }
+
+        .ride-route {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .ride-meta {
+            display: flex;
+            gap: var(--space-md);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .ride-fare {
+            font-weight: 700;
+            font-size: 1.1rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+        }
+
+        .action-card {
+            background: var(--bg-card);
+            border: var(--border-glass);
+            border-radius: var(--border-radius-lg);
+            padding: var(--space-xl);
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-gradient);
+            opacity: 0;
+            transition: opacity var(--transition-normal);
+            z-index: 0;
+        }
+
+        .action-card:hover::before {
+            opacity: 0.1;
+        }
+
+        .action-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary-dark);
+            box-shadow: var(--shadow-glow-sm);
+        }
+
+        .action-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .action-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-gradient);
+            border-radius: var(--border-radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: var(--space-md);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .action-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: var(--space-xs);
+        }
+
+        .action-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: var(--space-2xl);
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: var(--space-md);
+            opacity: 0.5;
+        }
+
+        /* Loading State */
+        .loading-skeleton {
+            background: linear-gradient(90deg, var(--bg-glass) 25%, rgba(255,255,255,0.05) 50%, var(--bg-glass) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: var(--border-radius-md);
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: var(--space-md);
+            }
+
+            .top-nav {
+                flex-direction: column;
+                gap: var(--space-md);
+                text-align: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .user-menu {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animated">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="dashboard-layout">
+        <!-- Modern Sidebar -->
+        <aside class="sidebar-modern">
+            <div class="sidebar-logo">
+                <span class="icon">🚗</span>
+                <span>RideFlow</span>
+            </div>
+
+            <ul class="nav-modern">
+                <li class="nav-item-modern">
+                    <a href="/rider/dashboard-modern" class="nav-link-modern active">
+                        <span class="icon">📊</span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item-modern">
+                    <a href="/rider/book" class="nav-link-modern">
+                        <span class="icon">🚕</span>
+                        <span>Book Ride</span>
+                    </a>
+                </li>
+                <li class="nav-item-modern">
+                    <a href="/rider/book-with-maps" class="nav-link-modern">
+                        <span class="icon">🗺️</span>
+                        <span>Maps Booking</span>
+                    </a>
+                </li>
+                <li class="nav-item-modern">
+                    <a href="/rider/history" class="nav-link-modern">
+                        <span class="icon">📜</span>
+                        <span>History</span>
+                    </a>
+                </li>
+                <li class="nav-item-modern">
+                    <a href="/rider/wallet" class="nav-link-modern">
+                        <span class="icon">💳</span>
+                        <span>Wallet</span>
+                    </a>
+                </li>
+            </ul>
+
+            <button class="btn btn-secondary" onclick="logout()" style="width: 100%;">
+                <span>🚪</span>
+                <span>Logout</span>
+            </button>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Navigation -->
+            <nav class="top-nav">
+                <div class="page-title">
+                    <h1>Dashboard</h1>
+                    <p>Welcome back! Here's your ride overview.</p>
+                </div>
+
+                <div class="user-menu">
+                    <button class="notification-btn">
+                        <span>🔔</span>
+                        <span class="notification-badge">3</span>
+                    </button>
+
+                    <div class="user-profile">
+                        <div class="user-avatar" id="userAvatar">👤</div>
+                        <div class="user-info">
+                            <div class="user-name" id="userName">Loading...</div>
+                            <div class="user-role">Rider</div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card primary fade-in">
+                    <div class="stat-icon">🚗</div>
+                    <div class="stat-value" id="totalRides">-</div>
+                    <div class="stat-label">Total Rides</div>
+                </div>
+
+                <div class="stat-card success fade-in">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-value" id="completedRides">-</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+
+                <div class="stat-card warning fade-in">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-value" id="totalSpent">-</div>
+                    <div class="stat-label">Total Spent</div>
+                </div>
+
+                <div class="stat-card secondary fade-in">
+                    <div class="stat-icon">💳</div>
+                    <div class="stat-value" id="walletBalance">-</div>
+                    <div class="stat-label">Wallet Balance</div>
+                </div>
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Recent Rides -->
+                <div class="rides-section">
+                    <div class="section-header">
+                        <h2 class="section-title">🕐 Recent Rides</h2>
+                        <a href="/rider/history" class="btn-view-all">
+                            View All →
+                        </a>
+                    </div>
+
+                    <div class="ride-list" id="recentRides">
+                        <!-- Loading State -->
+                        <div style="padding: var(--space-xl);">
+                            <div class="loading-skeleton" style="height: 60px; margin-bottom: var(--space-md);"></div>
+                            <div class="loading-skeleton" style="height: 60px; margin-bottom: var(--space-md);"></div>
+                            <div class="loading-skeleton" style="height: 60px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <a href="/rider/book" class="action-card">
+                        <div class="action-icon">🚕</div>
+                        <div class="action-title">Book a Ride</div>
+                        <div class="action-desc">Request a new ride now</div>
+                    </a>
+
+                    <a href="/rider/book-with-maps" class="action-card">
+                        <div class="action-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">🗺️</div>
+                        <div class="action-title">Maps Booking</div>
+                        <div class="action-desc">Use Google Maps to book</div>
+                    </a>
+
+                    <a href="/rider/wallet" class="action-card">
+                        <div class="action-icon" style="background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);">💳</div>
+                        <div class="action-title">Add Money</div>
+                        <div class="action-desc">Top up your wallet</div>
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        async function loadDashboardData() {
+            try {
+                // Load profile
+                const profileRes = await fetch('/api/rider/profile');
+                const profile = await profileRes.json();
+
+                document.getElementById('userName').textContent = profile.full_name;
+                document.getElementById('userAvatar').textContent = profile.full_name.charAt(0).toUpperCase();
+
+                // Load rides
+                const ridesRes = await fetch('/api/rider/rides');
+                const rides = await ridesRes.json();
+
+                // Calculate stats
+                const completed = rides.filter(r => r.ride_status === 'COMPLETED');
+                const totalSpent = completed.reduce((sum, r) => sum + parseFloat(r.fare), 0);
+
+                document.getElementById('totalRides').textContent = rides.length;
+                document.getElementById('completedRides').textContent = completed.length;
+                document.getElementById('totalSpent').textContent = 'PKR ' + totalSpent.toFixed(0);
+                document.getElementById('walletBalance').textContent = 'PKR ' + parseFloat(profile.wallet_balance).toFixed(0);
+
+                // Display recent rides
+                const recentContainer = document.getElementById('recentRides');
+                if (rides.length === 0) {
+                    recentContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">🚗</div>
+                            <p>No rides yet. Book your first ride!</p>
+                        </div>
+                    `;
+                } else {
+                    const recentRides = rides.slice(0, 5);
+                    recentContainer.innerHTML = recentRides.map(ride => `
+                        <div class="ride-item">
+                            <div class="ride-icon">${getVehicleIcon(ride.vehicle_type)}</div>
+                            <div class="ride-details">
+                                <div class="ride-route">${ride.pickup} → ${ride.dropoff}</div>
+                                <div class="ride-meta">
+                                    <span>📅 ${new Date(ride.requested_at).toLocaleDateString()}</span>
+                                    <span class="badge badge-${getStatusClass(ride.ride_status)}">${ride.ride_status}</span>
+                                </div>
+                            </div>
+                            <div class="ride-fare">PKR ${parseFloat(ride.fare).toFixed(0)}</div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        function getVehicleIcon(type) {
+            const icons = { 'ECONOMY': '🚗', 'PREMIUM': '🚙', 'BIKE': '🏍️' };
+            return icons[type] || '🚗';
+        }
+
+        function getStatusClass(status) {
+            const classes = {
+                'COMPLETED': 'success',
+                'CANCELLED': 'danger',
+                'REQUESTED': 'warning',
+                'IN_PROGRESS': 'primary'
+            };
+            return classes[status] || 'primary';
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login-modern';
+        }
+
+        loadDashboardData();
+    </script>
+</body>
+</html>
