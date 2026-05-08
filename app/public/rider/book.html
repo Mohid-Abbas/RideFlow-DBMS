@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Ride - RideFlow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            padding: 30px 20px;
+            color: white;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin: 10px 0;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .logout-btn {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            right: 20px;
+            padding: 12px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+        }
+        
+        .header {
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 1.8rem;
+        }
+        
+        .booking-form {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            max-width: 600px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .vehicle-types {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .vehicle-option {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .vehicle-option:hover {
+            border-color: #667eea;
+        }
+        
+        .vehicle-option.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        .vehicle-option .icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .vehicle-option .name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .vehicle-option .price {
+            color: #667eea;
+            font-size: 0.9rem;
+        }
+        
+        .fare-estimate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+        
+        .fare-estimate h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .fare-estimate .amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .btn-book {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn-book:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-book:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .success-message {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .error-message {
+            display: none;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">🚗 RideFlow</div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/rider/dashboard" class="nav-link">📊 Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a href="/rider/book" class="nav-link active">🚕 Book a Ride</a>
+            </li>
+            <li class="nav-item">
+                <a href="/rider/history" class="nav-link">📜 Ride History</a>
+            </li>
+            <li class="nav-item">
+                <a href="/rider/wallet" class="nav-link">💳 My Wallet</a>
+            </li>
+        </ul>
+        <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Book a Ride</h1>
+        </div>
+
+        <div class="booking-form">
+            <div class="success-message" id="successMessage"></div>
+            <div class="error-message" id="errorMessage"></div>
+
+            <div class="form-group">
+                <label>Select Vehicle Type</label>
+                <div class="vehicle-types">
+                    <div class="vehicle-option" data-type="ECONOMY" onclick="selectVehicle('ECONOMY')">
+                        <div class="icon">🚗</div>
+                        <div class="name">Economy</div>
+                        <div class="price">Affordable rides</div>
+                    </div>
+                    <div class="vehicle-option" data-type="PREMIUM" onclick="selectVehicle('PREMIUM')">
+                        <div class="icon">🚙</div>
+                        <div class="name">Premium</div>
+                        <div class="price">Luxury comfort</div>
+                    </div>
+                    <div class="vehicle-option" data-type="BIKE" onclick="selectVehicle('BIKE')">
+                        <div class="icon">🏍️</div>
+                        <div class="name">Bike</div>
+                        <div class="price">Quick & nimble</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="pickup">Pickup Location</label>
+                <select id="pickup" required>
+                    <option value="">Select pickup location</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="dropoff">Drop-off Location</label>
+                <select id="dropoff" required>
+                    <option value="">Select drop-off location</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="schedule">Schedule (Optional)</label>
+                <input type="datetime-local" id="schedule">
+            </div>
+
+            <div class="fare-estimate">
+                <h3>Estimated Fare</h3>
+                <div class="amount" id="fareAmount">PKR 0</div>
+            </div>
+
+            <button class="btn-book" id="bookBtn" onclick="bookRide()" disabled>
+                Request Ride
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let selectedVehicleType = null;
+        let locations = [];
+        let fareRules = [];
+
+        async function loadLocations() {
+            try {
+                const res = await fetch('/api/locations');
+                locations = await res.json();
+                
+                const pickupSelect = document.getElementById('pickup');
+                const dropoffSelect = document.getElementById('dropoff');
+                
+                locations.forEach(loc => {
+                    pickupSelect.innerHTML += `<option value="${loc.location_id}">${loc.address}, ${loc.city}</option>`;
+                    dropoffSelect.innerHTML += `<option value="${loc.location_id}">${loc.address}, ${loc.city}</option>`;
+                });
+            } catch (error) {
+                console.error('Error loading locations:', error);
+            }
+        }
+
+        async function loadFareRules() {
+            try {
+                const res = await fetch('/api/fare-rules');
+                fareRules = await res.json();
+            } catch (error) {
+                console.error('Error loading fare rules:', error);
+            }
+        }
+
+        function selectVehicle(type) {
+            selectedVehicleType = type;
+            
+            document.querySelectorAll('.vehicle-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.querySelector(`[data-type="${type}"]`).classList.add('selected');
+            
+            updateFareEstimate();
+            checkFormValidity();
+        }
+
+        function updateFareEstimate() {
+            if (!selectedVehicleType) return;
+            
+            const rule = fareRules.find(r => r.vehicle_type === selectedVehicleType);
+            if (rule) {
+                const isPeak = (new Date().getHours() >= 7 && new Date().getHours() <= 9) || 
+                               (new Date().getHours() >= 17 && new Date().getHours() <= 20);
+                const multiplier = (rule.is_surge_active && isPeak) ? rule.surge_multiplier : 1;
+                
+                // Estimated 5km, 15min ride
+                const estimatedFare = (rule.base_rate + (rule.per_km_rate * 5) + (rule.per_min_rate * 15)) * multiplier;
+                document.getElementById('fareAmount').textContent = `PKR ${estimatedFare.toFixed(0)}`;
+            }
+        }
+
+        function checkFormValidity() {
+            const pickup = document.getElementById('pickup').value;
+            const dropoff = document.getElementById('dropoff').value;
+            const bookBtn = document.getElementById('bookBtn');
+            
+            bookBtn.disabled = !(selectedVehicleType && pickup && dropoff && pickup !== dropoff);
+        }
+
+        document.getElementById('pickup').addEventListener('change', checkFormValidity);
+        document.getElementById('dropoff').addEventListener('change', checkFormValidity);
+
+        async function bookRide() {
+            const bookBtn = document.getElementById('bookBtn');
+            bookBtn.disabled = true;
+            bookBtn.textContent = 'Booking...';
+            
+            const data = {
+                pickup_loc_id: document.getElementById('pickup').value,
+                dropoff_loc_id: document.getElementById('dropoff').value,
+                vehicle_type: selectedVehicleType,
+                scheduled_at: document.getElementById('schedule').value || null
+            };
+
+            try {
+                const res = await fetch('/api/rider/book', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await res.json();
+
+                if (result.success) {
+                    document.getElementById('successMessage').style.display = 'block';
+                    document.getElementById('successMessage').textContent = 
+                        `Ride booked successfully! Ride ID: ${result.ride_id}, Estimated fare: PKR ${parseFloat(result.estimated_fare).toFixed(0)}`;
+                    
+                    setTimeout(() => {
+                        window.location.href = '/rider/history';
+                    }, 2000);
+                } else {
+                    throw new Error(result.error || 'Booking failed');
+                }
+            } catch (error) {
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('errorMessage').textContent = error.message;
+                bookBtn.disabled = false;
+                bookBtn.textContent = 'Request Ride';
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login';
+        }
+
+        loadLocations();
+        loadFareRules();
+    </script>
+</body>
+</html>
