@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Wallet - RideFlow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            padding: 30px 20px;
+            color: white;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin: 10px 0;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .logout-btn {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            right: 20px;
+            padding: 12px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+        }
+        
+        .header {
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 1.8rem;
+        }
+        
+        .wallet-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+        
+        @media (max-width: 900px) {
+            .wallet-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .balance-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+        }
+        
+        .balance-card h3 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+        
+        .balance-amount {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .balance-card p {
+            opacity: 0.8;
+            font-size: 0.95rem;
+        }
+        
+        .payment-methods {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .payment-methods h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+        
+        .payment-option {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .payment-option:hover {
+            border-color: #667eea;
+        }
+        
+        .payment-option .icon {
+            font-size: 2rem;
+            margin-right: 15px;
+        }
+        
+        .payment-option .info h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .payment-option .info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .transactions-section {
+            grid-column: 1 / -1;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .transactions-section h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+        
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .transactions-table th,
+        .transactions-table td {
+            padding: 15px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .transactions-table th {
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            background: #f8f9fa;
+        }
+        
+        .payment-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .status-paid { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-failed { background: #f8d7da; color: #721c24; }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">🚗 RideFlow</div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/rider/dashboard" class="nav-link">📊 Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a href="/rider/book" class="nav-link">🚕 Book a Ride</a>
+            </li>
+            <li class="nav-item">
+                <a href="/rider/history" class="nav-link">📜 Ride History</a>
+            </li>
+            <li class="nav-item">
+                <a href="/rider/wallet" class="nav-link active">💳 My Wallet</a>
+            </li>
+        </ul>
+        <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>💳 My Wallet</h1>
+        </div>
+
+        <div class="wallet-grid">
+            <div class="balance-card">
+                <h3>Wallet Balance</h3>
+                <div class="balance-amount" id="balanceAmount">PKR 0</div>
+                <p>Available for rides and in-app purchases</p>
+            </div>
+
+            <div class="payment-methods">
+                <h3>Payment Methods</h3>
+                
+                <div class="payment-option">
+                    <span class="icon">💵</span>
+                    <div class="info">
+                        <h4>Cash</h4>
+                        <p>Pay directly to the driver</p>
+                    </div>
+                </div>
+                
+                <div class="payment-option">
+                    <span class="icon">💳</span>
+                    <div class="info">
+                        <h4>Credit/Debit Card</h4>
+                        <p>Secure card payments</p>
+                    </div>
+                </div>
+                
+                <div class="payment-option">
+                    <span class="icon">👛</span>
+                    <div class="info">
+                        <h4>In-App Wallet</h4>
+                        <p>Use your RideFlow balance</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="transactions-section">
+                <h3>Recent Payments</h3>
+                <div id="transactionsContainer" class="loading">Loading transactions...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadWalletData() {
+            try {
+                // Load profile for wallet balance
+                const profileRes = await fetch('/api/rider/profile');
+                const profile = await profileRes.json();
+                
+                document.getElementById('balanceAmount').textContent = 
+                    `PKR ${parseFloat(profile.wallet_balance || 0).toFixed(0)}`;
+                
+                // Load ride payments as transactions
+                const ridesRes = await fetch('/api/rider/rides');
+                const rides = await ridesRes.json();
+                
+                const container = document.getElementById('transactionsContainer');
+                
+                if (rides.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;color:#666;">No transactions yet</p>';
+                    return;
+                }
+                
+                // Filter rides with payment info
+                const paidRides = rides.filter(r => r.fare > 0);
+                
+                container.innerHTML = `
+                    <table class="transactions-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Ride ID</th>
+                                <th>Pickup</th>
+                                <th>Dropoff</th>
+                                <th>Method</th>
+                                <th>Status</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${paidRides.slice(0, 10).map(ride => `
+                                <tr>
+                                    <td>${new Date(ride.requested_at).toLocaleDateString()}</td>
+                                    <td>#${ride.ride_id}</td>
+                                    <td>${ride.pickup_city}</td>
+                                    <td>${ride.dropoff}</td>
+                                    <td>CASH</td>
+                                    <td>
+                                        <span class="payment-status status-${ride.ride_status === 'COMPLETED' ? 'paid' : 'pending'}">
+                                            ${ride.ride_status === 'COMPLETED' ? 'PAID' : 'PENDING'}
+                                        </span>
+                                    </td>
+                                    <td>PKR ${parseFloat(ride.fare).toFixed(0)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                console.error('Error loading wallet data:', error);
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login';
+        }
+
+        loadWalletData();
+    </script>
+</body>
+</html>
