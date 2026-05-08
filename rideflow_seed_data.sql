@@ -125,12 +125,12 @@ INSERT INTO rides (rider_id, driver_id, vehicle_id, pickup_loc_id, dropoff_loc_i
 (4, 5, 7, 4, 2, 1, DATE_SUB(NOW(), INTERVAL 45 MINUTE), NULL, 0, 0, 'DRIVER_EN_ROUTE', 192.50),
 -- Requested rides
 (5, 1, 1, 6, 1, 1, DATE_SUB(NOW(), INTERVAL 5 MINUTE), NULL, 0, 0, 'REQUESTED', 165.00),
--- Additional rides for driver 10 (to test low rating trigger)
-(2, 10, 15, 1, 3, 1, DATE_SUB(CURDATE(), INTERVAL 10 DAY), NULL, 30, 9.5, 'COMPLETED', 250.00),
-(3, 10, 16, 2, 5, 1, DATE_SUB(CURDATE(), INTERVAL 9 DAY), NULL, 25, 8.0, 'COMPLETED', 220.00),
-(4, 10, 17, 3, 1, 1, DATE_SUB(CURDATE(), INTERVAL 8 DAY), NULL, 40, 13.5, 'COMPLETED', 310.00),
-(5, 10, 18, 4, 6, 1, DATE_SUB(CURDATE(), INTERVAL 7 DAY), NULL, 20, 6.8, 'COMPLETED', 195.00),
-(2, 10, 19, 1, 4, 1, DATE_SUB(CURDATE(), INTERVAL 6 DAY), NULL, 35, 11.2, 'COMPLETED', 275.00);
+-- Additional rides for driver 4 (Rashid Mehmood, user_id 10) to test low rating trigger
+(2, 4, 15, 1, 3, 1, DATE_SUB(CURDATE(), INTERVAL 10 DAY), NULL, 30, 9.5, 'COMPLETED', 250.00),
+(3, 4, 16, 2, 5, 1, DATE_SUB(CURDATE(), INTERVAL 9 DAY), NULL, 25, 8.0, 'COMPLETED', 220.00),
+(4, 4, 17, 3, 1, 1, DATE_SUB(CURDATE(), INTERVAL 8 DAY), NULL, 40, 13.5, 'COMPLETED', 310.00),
+(5, 4, 18, 4, 6, 1, DATE_SUB(CURDATE(), INTERVAL 7 DAY), NULL, 20, 6.8, 'COMPLETED', 195.00),
+(2, 4, 19, 1, 4, 1, DATE_SUB(CURDATE(), INTERVAL 6 DAY), NULL, 35, 11.2, 'COMPLETED', 275.00);
 
 -- Insert Payments
 INSERT INTO payments (ride_id, rider_id, promo_id, payment_method, amount, payment_status, txn_date, promo_discount) VALUES
@@ -158,12 +158,12 @@ INSERT INTO driver_earnings (ride_id, driver_id, gross_fare, commission_pct, net
 (5, 5, 182.50, 20.00, 146.00, 'PAID'),
 (7, 1, 175.00, 20.00, 140.00, 'PENDING'),
 (8, 5, 192.50, 20.00, 154.00, 'PENDING'),
--- Driver earnings for driver 10 (rides 20-24)
-(20, 10, 250.00, 20.00, 200.00, 'PAID'),
-(21, 10, 220.00, 20.00, 176.00, 'PAID'),
-(22, 10, 310.00, 20.00, 248.00, 'PAID'),
-(23, 10, 195.00, 20.00, 156.00, 'PAID'),
-(24, 10, 275.00, 20.00, 220.00, 'PAID');
+-- Driver earnings for driver 4 (rides 20-24)
+(20, 4, 250.00, 20.00, 200.00, 'PAID'),
+(21, 4, 220.00, 20.00, 176.00, 'PAID'),
+(22, 4, 310.00, 20.00, 248.00, 'PAID'),
+(23, 4, 195.00, 20.00, 156.00, 'PAID'),
+(24, 4, 275.00, 20.00, 220.00, 'PAID');
 
 -- Insert Ratings
 INSERT INTO ratings (ride_id, rated_by, rated_user, score, comment, rated_at) VALUES
@@ -182,7 +182,7 @@ INSERT INTO ratings (ride_id, rated_by, rated_user, score, comment, rated_at) VA
 -- Ride 5: Both rated
 (5, 5, 11, 4, 'Good ride', DATE_SUB(CURDATE(), INTERVAL 1 DAY)),
 (5, 11, 5, 5, 'Nice person', DATE_SUB(CURDATE(), INTERVAL 1 DAY)),
--- Low ratings to test trigger (Driver 10 should be flagged)
+-- Low ratings to test trigger (Driver 4 - user_id 10 should be flagged)
 (20, 2, 10, 2, 'Late arrival', DATE_SUB(CURDATE(), INTERVAL 10 DAY)),
 (21, 3, 10, 1, 'Poor driving', DATE_SUB(CURDATE(), INTERVAL 9 DAY)),
 (22, 4, 10, 2, 'Car was not clean', DATE_SUB(CURDATE(), INTERVAL 8 DAY)),
