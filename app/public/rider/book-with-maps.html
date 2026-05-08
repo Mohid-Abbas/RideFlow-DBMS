@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Ride - RideFlow (Google Maps)</title>
+    <!-- Replace YOUR_API_KEY with your actual Google Maps API Key -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initMap" async defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            padding: 30px 20px;
+            color: white;
+            z-index: 100;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin: 10px 0;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .logout-btn {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            right: 20px;
+            padding: 12px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .main-content {
+            margin-left: 260px;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            gap: 20px;
+        }
+        
+        .booking-panel {
+            width: 400px;
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            overflow-y: auto;
+        }
+        
+        .header {
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .vehicle-types {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .vehicle-option {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .vehicle-option:hover {
+            border-color: #667eea;
+        }
+        
+        .vehicle-option.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        .vehicle-option .icon {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        
+        .vehicle-option .name {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.85rem;
+        }
+        
+        .route-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .route-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .route-info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .route-info-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .route-info-value {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .fare-estimate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .fare-estimate h3 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+        
+        .fare-estimate .amount {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .btn-book {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn-book:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-book:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .map-container {
+            flex: 1;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .api-key-notice {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #fff3cd;
+            color: #856404;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            z-index: 1000;
+            max-width: 300px;
+        }
+        
+        .success-message, .error-message {
+            display: none;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .pac-container {
+            z-index: 10000 !important;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">🚗 RideFlow</div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/rider/dashboard" class="nav-link">📊 Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a href="/rider/book" class="nav-link active">🚕 Book a Ride</a>
+            </li>
+            <li class="nav-item">
+                <a href="/rider/history" class="nav-link">📜 Ride History</a>
+            </li>
+            <li class="nav-item">
+                <a href="/rider/wallet" class="nav-link">💳 My Wallet</a>
+            </li>
+        </ul>
+        <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+    </div>
+
+    <div class="main-content">
+        <div class="booking-panel">
+            <div class="header">
+                <h1>🗺️ Book with Maps</h1>
+            </div>
+
+            <div class="success-message" id="successMessage"></div>
+            <div class="error-message" id="errorMessage"></div>
+
+            <div class="form-group">
+                <label>📍 Pickup Location</label>
+                <input type="text" id="pickupInput" placeholder="Search pickup location...">
+            </div>
+
+            <div class="form-group">
+                <label>📍 Drop-off Location</label>
+                <input type="text" id="dropoffInput" placeholder="Search drop-off location...">
+            </div>
+
+            <div class="form-group">
+                <label>Select Vehicle</label>
+                <div class="vehicle-types">
+                    <div class="vehicle-option" data-type="ECONOMY" onclick="selectVehicle('ECONOMY')">
+                        <div class="icon">🚗</div>
+                        <div class="name">Economy</div>
+                    </div>
+                    <div class="vehicle-option" data-type="PREMIUM" onclick="selectVehicle('PREMIUM')">
+                        <div class="icon">🚙</div>
+                        <div class="name">Premium</div>
+                    </div>
+                    <div class="vehicle-option" data-type="BIKE" onclick="selectVehicle('BIKE')">
+                        <div class="icon">🏍️</div>
+                        <div class="name">Bike</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="route-info" id="routeInfo" style="display: none;">
+                <div class="route-info-item">
+                    <span class="route-info-label">Distance</span>
+                    <span class="route-info-value" id="distanceValue">-</span>
+                </div>
+                <div class="route-info-item">
+                    <span class="route-info-label">Duration</span>
+                    <span class="route-info-value" id="durationValue">-</span>
+                </div>
+            </div>
+
+            <div class="fare-estimate">
+                <h3>Estimated Fare</h3>
+                <div class="amount" id="fareAmount">PKR 0</div>
+            </div>
+
+            <button class="btn-book" id="bookBtn" onclick="bookRide()" disabled>
+                Request Ride
+            </button>
+        </div>
+
+        <div class="map-container">
+            <div class="api-key-notice" id="apiNotice">
+                ⚠️ Replace "YOUR_API_KEY" in the script tag with your Google Maps API Key
+            </div>
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <script>
+        let map;
+        let pickupMarker = null;
+        let dropoffMarker = null;
+        let directionsService;
+        let directionsRenderer;
+        let pickupAutocomplete;
+        let dropoffAutocomplete;
+        let selectedVehicleType = null;
+        let fareRules = [];
+        let currentRoute = null;
+
+        // Default center (Pakistan)
+        const defaultCenter = { lat: 31.5204, lng: 74.3587 };
+
+        function initMap() {
+            // Check if API key is set
+            if (document.querySelector('script[src*="YOUR_API_KEY"]')) {
+                document.getElementById('apiNotice').style.display = 'block';
+            } else {
+                document.getElementById('apiNotice').style.display = 'none';
+            }
+
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: defaultCenter,
+                zoom: 12,
+                mapTypeControl: false,
+                streetViewControl: false
+            });
+
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                suppressMarkers: true
+            });
+
+            // Initialize Places Autocomplete
+            pickupAutocomplete = new google.maps.places.Autocomplete(
+                document.getElementById('pickupInput'),
+                { types: ['geocode', 'establishment'] }
+            );
+
+            dropoffAutocomplete = new google.maps.places.Autocomplete(
+                document.getElementById('dropoffInput'),
+                { types: ['geocode', 'establishment'] }
+            );
+
+            // Bind to map bounds
+            pickupAutocomplete.bindTo('bounds', map);
+            dropoffAutocomplete.bindTo('bounds', map);
+
+            // Listen for place selection
+            pickupAutocomplete.addListener('place_changed', () => {
+                const place = pickupAutocomplete.getPlace();
+                if (place.geometry) {
+                    setPickupMarker(place.geometry.location, place.formatted_address);
+                    calculateRoute();
+                }
+            });
+
+            dropoffAutocomplete.addListener('place_changed', () => {
+                const place = dropoffAutocomplete.getPlace();
+                if (place.geometry) {
+                    setDropoffMarker(place.geometry.location, place.formatted_address);
+                    calculateRoute();
+                }
+            });
+
+            loadFareRules();
+        }
+
+        function setPickupMarker(location, address) {
+            if (pickupMarker) pickupMarker.setMap(null);
+            
+            pickupMarker = new google.maps.Marker({
+                position: location,
+                map: map,
+                icon: {
+                    url: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png',
+                    scaledSize: new google.maps.Size(40, 40)
+                },
+                title: 'Pickup: ' + address
+            });
+
+            map.setCenter(location);
+            map.setZoom(14);
+        }
+
+        function setDropoffMarker(location, address) {
+            if (dropoffMarker) dropoffMarker.setMap(null);
+            
+            dropoffMarker = new google.maps.Marker({
+                position: location,
+                map: map,
+                icon: {
+                    url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
+                    scaledSize: new google.maps.Size(40, 40)
+                },
+                title: 'Dropoff: ' + address
+            });
+        }
+
+        function calculateRoute() {
+            if (!pickupMarker || !dropoffMarker) return;
+
+            const request = {
+                origin: pickupMarker.getPosition(),
+                destination: dropoffMarker.getPosition(),
+                travelMode: google.maps.TravelMode.DRIVING
+            };
+
+            directionsService.route(request, (result, status) => {
+                if (status === google.maps.DirectionsStatus.OK) {
+                    directionsRenderer.setDirections(result);
+                    currentRoute = result.routes[0].legs[0];
+                    
+                    // Update route info
+                    document.getElementById('routeInfo').style.display = 'block';
+                    document.getElementById('distanceValue').textContent = currentRoute.distance.text;
+                    document.getElementById('durationValue').textContent = currentRoute.duration.text;
+                    
+                    updateFareEstimate();
+                    checkFormValidity();
+                }
+            });
+        }
+
+        async function loadFareRules() {
+            try {
+                const res = await fetch('/api/fare-rules');
+                fareRules = await res.json();
+            } catch (error) {
+                console.error('Error loading fare rules:', error);
+            }
+        }
+
+        function selectVehicle(type) {
+            selectedVehicleType = type;
+            
+            document.querySelectorAll('.vehicle-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.querySelector(`[data-type="${type}"]`).classList.add('selected');
+            
+            updateFareEstimate();
+            checkFormValidity();
+        }
+
+        function updateFareEstimate() {
+            if (!selectedVehicleType || !currentRoute) return;
+            
+            const rule = fareRules.find(r => r.vehicle_type === selectedVehicleType);
+            if (rule) {
+                const distanceKm = currentRoute.distance.value / 1000;
+                const durationMin = Math.ceil(currentRoute.duration.value / 60);
+                
+                const isPeak = (new Date().getHours() >= 7 && new Date().getHours() <= 9) || 
+                               (new Date().getHours() >= 17 && new Date().getHours() <= 20);
+                const multiplier = (rule.is_surge_active && isPeak) ? rule.surge_multiplier : 1;
+                
+                const estimatedFare = (rule.base_rate + (rule.per_km_rate * distanceKm) + (rule.per_min_rate * durationMin)) * multiplier;
+                document.getElementById('fareAmount').textContent = `PKR ${estimatedFare.toFixed(0)}`;
+            }
+        }
+
+        function checkFormValidity() {
+            const bookBtn = document.getElementById('bookBtn');
+            bookBtn.disabled = !(selectedVehicleType && pickupMarker && dropoffMarker);
+        }
+
+        async function bookRide() {
+            const bookBtn = document.getElementById('bookBtn');
+            bookBtn.disabled = true;
+            bookBtn.textContent = 'Booking...';
+            
+            const pickupPlace = pickupAutocomplete.getPlace();
+            const dropoffPlace = dropoffAutocomplete.getPlace();
+            
+            const data = {
+                pickup_address: pickupPlace.formatted_address,
+                pickup_lat: pickupPlace.geometry.location.lat(),
+                pickup_lng: pickupPlace.geometry.location.lng(),
+                dropoff_address: dropoffPlace.formatted_address,
+                dropoff_lat: dropoffPlace.geometry.location.lat(),
+                dropoff_lng: dropoffPlace.geometry.location.lng(),
+                vehicle_type: selectedVehicleType,
+                distance_km: (currentRoute.distance.value / 1000).toFixed(2),
+                duration_min: Math.ceil(currentRoute.duration.value / 60),
+                estimated_fare: document.getElementById('fareAmount').textContent.replace('PKR ', '')
+            };
+
+            try {
+                const res = await fetch('/api/rider/book-with-maps', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await res.json();
+
+                if (result.success) {
+                    document.getElementById('successMessage').style.display = 'block';
+                    document.getElementById('successMessage').textContent = 
+                        `✅ Ride booked successfully! Driver is on the way. Ride ID: #${result.ride_id}`;
+                    
+                    setTimeout(() => {
+                        window.location.href = '/rider/history';
+                    }, 3000);
+                } else {
+                    throw new Error(result.error || 'Booking failed');
+                }
+            } catch (error) {
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('errorMessage').textContent = '❌ ' + error.message;
+                bookBtn.disabled = false;
+                bookBtn.textContent = 'Request Ride';
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login';
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (map) google.maps.event.trigger(map, 'resize');
+        });
+    </script>
+</body>
+</html>
