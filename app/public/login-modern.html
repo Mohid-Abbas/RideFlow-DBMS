@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RideFlow - Welcome</title>
+    <link rel="stylesheet" href="/css/modern-theme.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <style>
+        /* Additional Login-Specific Styles */
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            max-width: 1100px;
+            width: 95%;
+            min-height: 600px;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius-lg);
+            border: var(--border-glass);
+            overflow: hidden;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                0 0 100px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Left Side - Branding */
+        .login-branding {
+            background: var(--primary-gradient);
+            padding: var(--space-2xl);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-branding::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 30s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .brand-header {
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: var(--space-xl);
+        }
+
+        .brand-logo .icon {
+            font-size: 3.5rem;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.2));
+        }
+
+        .brand-tagline {
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.9);
+            line-height: 1.8;
+        }
+
+        .brand-features {
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+            color: rgba(255,255,255,0.95);
+        }
+
+        .feature-icon {
+            width: 45px;
+            height: 45px;
+            background: rgba(255,255,255,0.2);
+            border-radius: var(--border-radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-text h4 {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .feature-text p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Right Side - Form */
+        .login-form-section {
+            padding: var(--space-2xl);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: var(--space-2xl);
+        }
+
+        .form-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: var(--space-sm);
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-header p {
+            color: var(--text-secondary);
+        }
+
+        /* Role Selector */
+        .role-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-md);
+            margin-bottom: var(--space-xl);
+        }
+
+        .role-card {
+            background: var(--bg-glass);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: var(--border-radius-md);
+            padding: var(--space-lg);
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+        }
+
+        .role-card:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.2);
+            transform: translateY(-3px);
+        }
+
+        .role-card.selected {
+            background: var(--primary-gradient);
+            border-color: transparent;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .role-card .role-icon {
+            font-size: 2rem;
+            margin-bottom: var(--space-sm);
+        }
+
+        .role-card .role-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        /* Input Fields */
+        .input-wrapper {
+            position: relative;
+            margin-bottom: var(--space-lg);
+        }
+
+        .input-wrapper .input-icon {
+            position: absolute;
+            left: var(--space-lg);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            transition: color var(--transition-fast);
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: var(--space-md) var(--space-lg) var(--space-md) 3rem;
+            background: var(--bg-glass);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: var(--border-radius-md);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all var(--transition-normal);
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: var(--primary-dark);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+        }
+
+        .input-wrapper input:focus + .input-icon {
+            color: var(--primary-dark);
+        }
+
+        .input-wrapper input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Login Button */
+        .btn-login {
+            width: 100%;
+            padding: var(--space-md);
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-md);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-login:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-login .spinner {
+            width: 20px;
+            height: 20px;
+            border-width: 2px;
+            display: none;
+            margin-right: var(--space-sm);
+        }
+
+        .btn-login.loading .spinner {
+            display: inline-block;
+        }
+
+        .btn-login.loading .btn-text {
+            display: none;
+        }
+
+        /* Demo Accounts */
+        .demo-section {
+            margin-top: var(--space-xl);
+            padding-top: var(--space-xl);
+            border-top: var(--border-glass);
+        }
+
+        .demo-title {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: var(--space-md);
+        }
+
+        .demo-accounts {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-sm);
+            flex-wrap: wrap;
+        }
+
+        .demo-chip {
+            background: var(--bg-glass);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: var(--border-radius-xl);
+            padding: var(--space-xs) var(--space-md);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .demo-chip:hover {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: var(--primary-dark);
+            color: var(--text-primary);
+        }
+
+        /* Error Message */
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: var(--border-radius-md);
+            padding: var(--space-md);
+            margin-bottom: var(--space-lg);
+            display: none;
+            align-items: center;
+            gap: var(--space-sm);
+            color: #f87171;
+            font-size: 0.9rem;
+        }
+
+        .error-message.show {
+            display: flex;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .login-container {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+            }
+
+            .login-branding {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-form-section {
+                padding: var(--space-lg);
+            }
+
+            .role-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .form-header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animated">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="login-page">
+        <div class="login-container scale-in">
+            <!-- Left Side - Branding -->
+            <div class="login-branding">
+                <div class="brand-header">
+                    <div class="brand-logo">
+                        <span class="icon">🚗</span>
+                        <span>RideFlow</span>
+                    </div>
+                    <p class="brand-tagline">
+                        Experience the future of ride-hailing. <br>
+                        Fast, secure, and intelligent transportation <br>
+                        at your fingertips.
+                    </p>
+                </div>
+
+                <div class="brand-features">
+                    <div class="feature-item">
+                        <div class="feature-icon">⚡</div>
+                        <div class="feature-text">
+                            <h4>Instant Booking</h4>
+                            <p>Book a ride in seconds</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🛡️</div>
+                        <div class="feature-text">
+                            <h4>Secure Rides</h4>
+                            <p>Verified drivers & live tracking</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">💳</div>
+                        <div class="feature-text">
+                            <h4>Easy Payments</h4>
+                            <p>Multiple payment options</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side - Login Form -->
+            <div class="login-form-section">
+                <div class="form-header">
+                    <h1>Welcome Back</h1>
+                    <p>Sign in to access your dashboard</p>
+                </div>
+
+                <!-- Role Selector -->
+                <div class="role-selector">
+                    <div class="role-card selected" data-role="RIDER" onclick="selectRole('RIDER')">
+                        <div class="role-icon">👤</div>
+                        <div class="role-name">Rider</div>
+                    </div>
+                    <div class="role-card" data-role="DRIVER" onclick="selectRole('DRIVER')">
+                        <div class="role-icon">🚗</div>
+                        <div class="role-name">Driver</div>
+                    </div>
+                    <div class="role-card" data-role="ADMIN" onclick="selectRole('ADMIN')">
+                        <div class="role-icon">⚙️</div>
+                        <div class="role-name">Admin</div>
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div class="error-message" id="errorMessage">
+                    <span>⚠️</span>
+                    <span id="errorText">Invalid credentials</span>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="input-wrapper">
+                        <input 
+                            type="email" 
+                            id="email" 
+                            placeholder="Enter your email"
+                            required
+                            autocomplete="email"
+                        >
+                        <span class="input-icon">📧</span>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            placeholder="Enter your password"
+                            required
+                            autocomplete="current-password"
+                        >
+                        <span class="input-icon">🔒</span>
+                    </div>
+
+                    <button type="submit" class="btn-login" id="loginBtn">
+                        <span class="spinner"></span>
+                        <span class="btn-text">Sign In</span>
+                    </button>
+                </form>
+
+                <!-- Demo Accounts -->
+                <div class="demo-section">
+                    <p class="demo-title">Quick Login - Demo Accounts</p>
+                    <div class="demo-accounts">
+                        <span class="demo-chip" onclick="fillDemo('rider@rideflow.com')">
+                            👤 Rider
+                        </span>
+                        <span class="demo-chip" onclick="fillDemo('driver@rideflow.com')">
+                            🚗 Driver
+                        </span>
+                        <span class="demo-chip" onclick="fillDemo('admin@rideflow.com')">
+                            ⚙️ Admin
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedRole = 'RIDER';
+
+        function selectRole(role) {
+            selectedRole = role;
+            
+            // Update UI
+            document.querySelectorAll('.role-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`[data-role="${role}"]`).classList.add('selected');
+            
+            // Auto-fill demo email
+            const emailMap = {
+                'RIDER': 'rider@rideflow.com',
+                'DRIVER': 'driver@rideflow.com',
+                'ADMIN': 'admin@rideflow.com'
+            };
+            document.getElementById('email').value = emailMap[role];
+            document.getElementById('password').value = 'password';
+        }
+
+        function fillDemo(email) {
+            document.getElementById('email').value = email;
+            document.getElementById('password').value = 'password';
+            
+            // Update role selection
+            const roleMap = {
+                'rider@rideflow.com': 'RIDER',
+                'driver@rideflow.com': 'DRIVER',
+                'admin@rideflow.com': 'ADMIN'
+            };
+            selectRole(roleMap[email]);
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById('loginBtn');
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            
+            // Show loading state
+            btn.classList.add('loading');
+            btn.disabled = true;
+            errorDiv.classList.remove('show');
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, role: selectedRole })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    // Redirect based on role
+                    const redirectMap = {
+                        'RIDER': '/rider/dashboard',
+                        'DRIVER': '/driver/dashboard',
+                        'ADMIN': '/admin/dashboard',
+                        'SUPER_ADMIN': '/admin/dashboard'
+                    };
+                    window.location.href = redirectMap[data.role] || '/login';
+                } else {
+                    throw new Error(data.error || 'Login failed');
+                }
+            } catch (error) {
+                errorText.textContent = error.message;
+                errorDiv.classList.add('show');
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        }
+
+        // Initialize with Rider selected
+        selectRole('RIDER');
+    </script>
+</body>
+</html>
