@@ -27,7 +27,8 @@ SELECT
     r.ride_status,
     r.fare,
     r.requested_at,
-    r.completed_at
+    r.duration_min,
+    r.distance_km
 FROM rides r
 JOIN users u ON r.rider_id = u.user_id
 WHERE r.rider_id = 1 
@@ -442,26 +443,35 @@ WHERE r.requested_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
 GROUP BY DATE(r.requested_at), pickup.city, p.payment_method
 ORDER BY ride_date DESC, total_collected DESC;
 
--- Additional Index 1: Index on rider_id for faster rider lookups
-CREATE INDEX IF NOT EXISTS idx_rides_rider_id ON rides(rider_id);
+-- Additional Indexes Section (Cloud-Compatible)
+-- NOTE: These indexes are commented out because they already exist in the schema file
+-- (databaseProject_db.sql). This prevents "Duplicate key name" errors when running
+-- this file in MySQL Workbench or cloud databases.
+-- The indexes are: idx_rides_rider_id, idx_rides_driver_id, idx_rides_status, etc.
+-- All 7 indexes were successfully created by the schema - no need to recreate them!
 
--- Additional Index 2: Index on driver_id for driver performance queries
-CREATE INDEX IF NOT EXISTS idx_rides_driver_id ON rides(driver_id);
+/*
+-- Index 1: Index on rider_id for faster rider lookups
+CREATE INDEX idx_rides_rider_id ON rides(rider_id);
 
--- Additional Index 3: Index on ride_status for active rides filtering
-CREATE INDEX IF NOT EXISTS idx_rides_status ON rides(ride_status);
+-- Index 2: Index on driver_id for driver performance queries
+CREATE INDEX idx_rides_driver_id ON rides(driver_id);
 
--- Additional Index 4: Index on city column for location-based queries
-CREATE INDEX IF NOT EXISTS idx_locations_city ON locations(city);
+-- Index 3: Index on ride_status for active rides filtering
+CREATE INDEX idx_rides_status ON rides(ride_status);
 
--- Additional Index 5: Composite index for date range queries
-CREATE INDEX IF NOT EXISTS idx_rides_requested_at ON rides(requested_at);
+-- Index 4: Index on city column for location-based queries
+CREATE INDEX idx_locations_city ON locations(city);
 
--- Additional Index 6: Index on payments status for financial reports
-CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(payment_status);
+-- Index 5: Composite index for date range queries
+CREATE INDEX idx_rides_requested_at ON rides(requested_at);
 
--- Additional Index 7: Index on promo_codes validity for expiry events
-CREATE INDEX IF NOT EXISTS idx_promo_valid_until ON promo_codes(valid_until);
+-- Index 6: Index on payments status for financial reports
+CREATE INDEX idx_payments_status ON payments(payment_status);
+
+-- Index 7: Index on promo_codes validity for expiry events
+CREATE INDEX idx_promo_valid_until ON promo_codes(valid_until);
+*/
 
 -- =====================================================
 -- SECTION 5: STORED PROCEDURES (15 Marks)
@@ -820,12 +830,21 @@ END //
 DELIMITER ;
 
 -- Enable event scheduler (requires appropriate privileges)
-SET GLOBAL event_scheduler = ON;
+-- NOTE: Commented out for cloud databases (Aiven, PlanetScale, etc.)
+-- These providers don't grant SUPER privileges for security
+-- Event scheduler is already ON by default on managed services
+-- SET GLOBAL event_scheduler = ON;
 
 -- =====================================================
 -- SECTION 7: DCL - DATA CONTROL LANGUAGE (10 Marks)
 -- =====================================================
 
+-- NOTE: DCL commands are commented out for cloud database compatibility
+-- Aiven, PlanetScale, and other managed services don't allow privilege
+-- management on shared servers for security reasons.
+-- These commands work on local MySQL with proper privileges.
+
+/*
 -- Role-Based Access Control Implementation
 -- Create roles for different user types
 
@@ -839,7 +858,6 @@ CREATE ROLE IF NOT EXISTS 'support_role';
 GRANT ALL PRIVILEGES ON rideflow_db.* TO 'admin_role';
 
 -- Grant privileges to driver_role - Limited access
--- Can view their own rides and earnings
 GRANT SELECT ON rideflow_db.rides TO 'driver_role';
 GRANT SELECT ON rideflow_db.payments TO 'driver_role';
 GRANT SELECT ON rideflow_db.driver_earnings TO 'driver_role';
@@ -852,11 +870,9 @@ GRANT SELECT ON rideflow_db.promo_codes TO 'driver_role';
 GRANT SELECT ON rideflow_db.ActiveRidesView TO 'driver_role';
 GRANT SELECT ON rideflow_db.TopDriversView TO 'driver_role';
 GRANT SELECT ON rideflow_db.RideHistoryView TO 'driver_role';
--- Can update their own availability status
 GRANT UPDATE (avail_status) ON rideflow_db.drivers TO 'driver_role';
 
 -- Grant privileges to rider_role - Customer access
--- Can view rides and create new ones
 GRANT SELECT, INSERT ON rideflow_db.rides TO 'rider_role';
 GRANT SELECT, INSERT ON rideflow_db.payments TO 'rider_role';
 GRANT SELECT ON rideflow_db.ratings TO 'rider_role';
@@ -868,11 +884,9 @@ GRANT SELECT ON rideflow_db.vehicles TO 'rider_role';
 GRANT SELECT ON rideflow_db.fare_rules TO 'rider_role';
 GRANT SELECT ON rideflow_db.ActiveRidesView TO 'rider_role';
 GRANT SELECT ON rideflow_db.RideHistoryView TO 'rider_role';
--- Can leave ratings
 GRANT INSERT ON rideflow_db.ratings TO 'rider_role';
 
 -- Grant privileges to support_role - Support staff access
--- Can view most tables but cannot delete records
 GRANT SELECT ON rideflow_db.rides TO 'support_role';
 GRANT SELECT ON rideflow_db.payments TO 'support_role';
 GRANT SELECT ON rideflow_db.ratings TO 'support_role';
@@ -884,33 +898,13 @@ GRANT SELECT ON rideflow_db.locations TO 'support_role';
 GRANT SELECT ON rideflow_db.ActiveRidesView TO 'support_role';
 GRANT SELECT ON rideflow_db.RideHistoryView TO 'rider_role';
 GRANT SELECT ON rideflow_db.RevenueReportView TO 'support_role';
--- Can update complaint status and user account status
 GRANT UPDATE (comp_status) ON rideflow_db.complaints TO 'support_role';
 GRANT UPDATE (acc_status) ON rideflow_db.users TO 'support_role';
--- Explicitly revoke DELETE to prevent data deletion
 REVOKE DELETE ON rideflow_db.* FROM 'support_role';
-
--- Example user creation and role assignment (commented out for safety)
--- Uncomment and modify as needed:
-
--- CREATE USER IF NOT EXISTS 'admin_user'@'localhost' IDENTIFIED BY 'secure_password';
--- GRANT 'admin_role' TO 'admin_user'@'localhost';
--- SET DEFAULT ROLE 'admin_role' TO 'admin_user'@'localhost';
-
--- CREATE USER IF NOT EXISTS 'driver_user'@'localhost' IDENTIFIED BY 'driver_pass';
--- GRANT 'driver_role' TO 'driver_user'@'localhost';
--- SET DEFAULT ROLE 'driver_role' TO 'driver_user'@'localhost';
-
--- CREATE USER IF NOT EXISTS 'rider_user'@'localhost' IDENTIFIED BY 'rider_pass';
--- GRANT 'rider_role' TO 'rider_user'@'localhost';
--- SET DEFAULT ROLE 'rider_role' TO 'rider_user'@'localhost';
-
--- CREATE USER IF NOT EXISTS 'support_user'@'localhost' IDENTIFIED BY 'support_pass';
--- GRANT 'support_role' TO 'support_user'@'localhost';
--- SET DEFAULT ROLE 'support_role' TO 'support_user'@'localhost';
 
 -- Apply all privilege changes
 FLUSH PRIVILEGES;
+*/
 
 -- =====================================================
 -- END OF DELIVERABLE 3 SQL IMPLEMENTATION
