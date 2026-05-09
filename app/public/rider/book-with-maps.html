@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book a Ride - RideFlow (Google Maps)</title>
     <!-- Replace YOUR_API_KEY with your actual Google Maps API Key -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initMap" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDeBR4pzl4StgD7e0g5jwGf-CVCV1FeeDY&libraries=places&callback=initMap" async defer></script>
     <style>
         * {
             margin: 0;
@@ -316,12 +316,18 @@
 
             <div class="form-group">
                 <label>📍 Pickup Location</label>
-                <input type="text" id="pickupInput" placeholder="Search pickup location...">
+                <input type="text" id="pickupInput" placeholder="Search or click on map...">
+                <button type="button" onclick="setMapClickMode('pickup')" style="margin-top: 8px; padding: 8px 12px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                    🗺️ Set by Clicking Map
+                </button>
             </div>
 
             <div class="form-group">
                 <label>📍 Drop-off Location</label>
-                <input type="text" id="dropoffInput" placeholder="Search drop-off location...">
+                <input type="text" id="dropoffInput" placeholder="Search or click on map...">
+                <button type="button" onclick="setMapClickMode('dropoff')" style="margin-top: 8px; padding: 8px 12px; background: #764ba2; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                    🗺️ Set by Clicking Map
+                </button>
             </div>
 
             <div class="form-group">
@@ -356,6 +362,7 @@
             <div class="fare-estimate">
                 <h3>Estimated Fare</h3>
                 <div class="amount" id="fareAmount">PKR 0</div>
+                <div id="fareBreakdown" style="margin-top: 10px; font-size: 0.75rem; opacity: 0.9; line-height: 1.5;"></div>
             </div>
 
             <button class="btn-book" id="bookBtn" onclick="bookRide()" disabled>
@@ -385,6 +392,12 @@
 
         // Default center (Pakistan)
         const defaultCenter = { lat: 31.5204, lng: 74.3587 };
+        
+        // Map click mode: null, 'pickup', or 'dropoff'
+        let mapClickMode = null;
+        let liveLocationMarker = null;
+        let liveLocationWatchId = null;
+        let geocoder = null;
 
         function initMap() {
             // Check if API key is set
@@ -422,6 +435,9 @@
             pickupAutocomplete.bindTo('bounds', map);
             dropoffAutocomplete.bindTo('bounds', map);
 
+            // Initialize Geocoder for reverse geocoding
+            geocoder = new google.maps.Geocoder();
+
             // Listen for place selection
             pickupAutocomplete.addListener('place_changed', () => {
                 const place = pickupAutocomplete.getPlace();
@@ -439,7 +455,159 @@
                 }
             });
 
+            // Enable clicking on map to set locations
+            map.addListener('click', (event) => {
+                handleMapClick(event.latLng);
+            });
+
+            // Try to get user's live location
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const pos = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        setLiveLocationMarker(pos);
+                        map.setCenter(pos);
+                    },
+                    () => {
+                        console.log('Geolocation permission denied or failed');
+                    }
+                );
+            }
+
             loadFareRules();
+        }
+
+        // Handle map clicks to set pickup or dropoff
+        function handleMapClick(location) {
+            if (!mapClickMode) {
+                // If no mode set, default to setting pickup if not set, else dropoff
+                if (!pickupMarker) {
+                    reverseGeocode(location, (address) => {
+                        document.getElementById('pickupInput').value = address;
+                        setPickupMarker(location, address);
+                    });
+                } else if (!dropoffMarker) {
+                    reverseGeocode(location, (address) => {
+                        document.getElementById('dropoffInput').value = address;
+                        setDropoffMarker(location, address);
+                        calculateRoute();
+                    });
+                }
+            } else if (mapClickMode === 'pickup') {
+                reverseGeocode(location, (address) => {
+                    document.getElementById('pickupInput').value = address;
+                    setPickupMarker(location, address);
+                    mapClickMode = null;
+                    document.body.style.cursor = 'default';
+                });
+            } else if (mapClickMode === 'dropoff') {
+                reverseGeocode(location, (address) => {
+                    document.getElementById('dropoffInput').value = address;
+                    setDropoffMarker(location, address);
+                    calculateRoute();
+                    mapClickMode = null;
+                    document.body.style.cursor = 'default';
+                });
+            }
+        }
+
+        // Reverse geocode coordinates to address
+        function reverseGeocode(location, callback) {
+            geocoder.geocode({ location: location }, (results, status) => {
+                if (status === 'OK' && results[0]) {
+                    callback(results[0].formatted_address);
+                } else {
+                    callback('Unknown Location');
+                }
+            });
+        }
+
+        // Set map click mode for explicit pickup/dropoff selection
+        function setMapClickMode(mode) {
+            mapClickMode = mode;
+            document.body.style.cursor = 'crosshair';
+            const message = mode === 'pickup' ? 'Click on map to set pickup location' : 'Click on map to set dropoff location';
+            showToast(message);
+        }
+
+        // Show toast notification
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #667eea;
+                color: white;
+                padding: 12px 24px;
+                border-radius: 25px;
+                font-weight: 600;
+                z-index: 10000;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Set live location marker
+        function setLiveLocationMarker(location) {
+            if (liveLocationMarker) liveLocationMarker.setMap(null);
+            
+            liveLocationMarker = new google.maps.Marker({
+                position: location,
+                map: map,
+                icon: {
+                    url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+                    scaledSize: new google.maps.Size(40, 40)
+                },
+                title: 'Your Location',
+                animation: google.maps.Animation.DROP
+            });
+        }
+
+        // Track live location during ride
+        function startLiveLocationTracking() {
+            if (liveLocationWatchId) {
+                navigator.geolocation.clearWatch(liveLocationWatchId);
+            }
+            
+            liveLocationWatchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    const pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    
+                    if (liveLocationMarker) {
+                        liveLocationMarker.setPosition(pos);
+                    } else {
+                        setLiveLocationMarker(pos);
+                    }
+                    
+                    // Center map on live location
+                    map.panTo(pos);
+                },
+                (error) => {
+                    console.error('Live location tracking error:', error);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        function stopLiveLocationTracking() {
+            if (liveLocationWatchId) {
+                navigator.geolocation.clearWatch(liveLocationWatchId);
+                liveLocationWatchId = null;
+            }
         }
 
         function setPickupMarker(location, address) {
@@ -524,15 +692,53 @@
             
             const rule = fareRules.find(r => r.vehicle_type === selectedVehicleType);
             if (rule) {
+                // FARE CALCULATION MATHEMATICS:
+                // ========================================
+                // Formula: Fare = (Base + Distance_Cost + Time_Cost) × Surge
+                // 
+                // Where:
+                // - Base = Fixed starting price
+                // - Distance_Cost = per_km_rate × distance_in_km
+                // - Time_Cost = per_min_rate × duration_in_minutes  
+                // - Surge = Multiplier during peak hours (if enabled)
+                //
+                // Peak Hours: 7-9 AM and 5-8 PM
+                // ========================================
+                
                 const distanceKm = currentRoute.distance.value / 1000;
                 const durationMin = Math.ceil(currentRoute.duration.value / 60);
                 
-                const isPeak = (new Date().getHours() >= 7 && new Date().getHours() <= 9) || 
-                               (new Date().getHours() >= 17 && new Date().getHours() <= 20);
+                // Check if peak hours (7-9 AM or 5-8 PM)
+                const currentHour = new Date().getHours();
+                const isPeak = (currentHour >= 7 && currentHour <= 9) || 
+                               (currentHour >= 17 && currentHour <= 20);
+                
+                // Apply surge multiplier if active and during peak hours
                 const multiplier = (rule.is_surge_active && isPeak) ? rule.surge_multiplier : 1;
                 
-                const estimatedFare = (rule.base_rate + (rule.per_km_rate * distanceKm) + (rule.per_min_rate * durationMin)) * multiplier;
+                // Calculate each component
+                const baseFare = rule.base_rate;
+                const distanceFare = rule.per_km_rate * distanceKm;
+                const timeFare = rule.per_min_rate * durationMin;
+                const subtotal = baseFare + distanceFare + timeFare;
+                const estimatedFare = subtotal * multiplier;
+                
+                // Update display
                 document.getElementById('fareAmount').textContent = `PKR ${estimatedFare.toFixed(0)}`;
+                
+                // Show calculation breakdown
+                let breakdownHTML = `
+                    Base: PKR ${baseFare.toFixed(2)}<br>
+                    Distance (${distanceKm.toFixed(1)}km): PKR ${distanceFare.toFixed(2)}<br>
+                    Time (${durationMin}min): PKR ${timeFare.toFixed(2)}<br>
+                    <strong>Subtotal: PKR ${subtotal.toFixed(2)}</strong>
+                `;
+                
+                if (multiplier > 1) {
+                    breakdownHTML += `<br><span style="color: #ffeb3b;">⚡ Surge (${multiplier}x): PKR ${estimatedFare.toFixed(2)}</span>`;
+                }
+                
+                document.getElementById('fareBreakdown').innerHTML = breakdownHTML;
             }
         }
 
