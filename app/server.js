@@ -382,6 +382,21 @@ app.get('/api/fare-rules', async (req, res) => {
     }
 });
 
+// Securely serve Google Maps API key (only to authenticated users)
+app.get('/api/config/maps-key', (req, res) => {
+    // Only provide API key to logged-in users
+    if (!req.session.userId) {
+        return res.status(401).json({ error: 'Authentication required' });
+    }
+    
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    if (!apiKey || apiKey === 'YOUR_GOOGLE_MAPS_API_KEY_HERE') {
+        return res.status(500).json({ error: 'Google Maps API key not configured' });
+    }
+    
+    res.json({ apiKey: apiKey });
+});
+
 // ==================== DRIVER DASHBOARD ====================
 
 app.get('/driver/dashboard', requireRole('DRIVER'), (req, res) => {
