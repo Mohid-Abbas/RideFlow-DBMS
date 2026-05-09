@@ -386,12 +386,21 @@ app.get('/api/fare-rules', async (req, res) => {
 app.get('/api/config/maps-key', (req, res) => {
     // Only provide API key to logged-in users
     if (!req.session.userId) {
-        return res.status(401).json({ error: 'Authentication required' });
+        console.log('API key request rejected: User not logged in');
+        return res.status(401).json({ error: 'Not logged in. Please login first.' });
     }
     
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-    if (!apiKey || apiKey === 'YOUR_GOOGLE_MAPS_API_KEY_HERE') {
-        return res.status(500).json({ error: 'Google Maps API key not configured' });
+    
+    // Debug logging (remove in production)
+    console.log('API Key check:', apiKey ? 'Found' : 'Not found', 'Value:', apiKey?.substring(0, 10) + '...');
+    
+    if (!apiKey) {
+        return res.status(500).json({ error: 'GOOGLE_MAPS_API_KEY not set in .env file' });
+    }
+    
+    if (apiKey === 'YOUR_GOOGLE_MAPS_API_KEY_HERE' || apiKey === 'YOUR_API_KEY') {
+        return res.status(500).json({ error: 'GOOGLE_MAPS_API_KEY is still set to placeholder value. Please add your real API key to .env file' });
     }
     
     res.json({ apiKey: apiKey });
