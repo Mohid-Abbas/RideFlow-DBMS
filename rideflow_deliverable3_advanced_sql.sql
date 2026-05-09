@@ -10,7 +10,7 @@
 -- 7. DCL (Data Control Language) - Role-based Access Control
 -- =====================================================
 
-USE rideflow_db;
+USE databaseProject_db;
 
 -- =====================================================
 -- SECTION 1: BASIC SQL QUERIES (5 Marks)
@@ -268,7 +268,7 @@ SELECT
     d.avg_rating,
     d.total_trips,
     d.wallet_balance,
-    v.make || ' ' || v.model AS vehicle,
+    CONCAT(v.make, ' ', v.model) AS vehicle,
     v.license_plate,
     COUNT(DISTINCT r.ride_id) AS rides_this_month,
     SUM(de.net_earning) AS earnings_this_month,
@@ -359,7 +359,6 @@ SELECT
     d.avg_rating,
     d.total_trips,
     d.wallet_balance,
-    d.profile_photo,
     
     -- Vehicle information
     v.vehicle_id,
@@ -387,7 +386,7 @@ WHERE d.avg_rating >= 4.5
   AND d.verif_status = 'VERIFIED'
 GROUP BY d.driver_id, u.full_name, u.email, u.phone, u.reg_date,
          d.license_num, d.cnic, d.verif_status, d.avail_status, 
-         d.avg_rating, d.total_trips, d.wallet_balance, d.profile_photo,
+         d.avg_rating, d.total_trips, d.wallet_balance,
          v.vehicle_id, v.make, v.model, v.vehicle_year, v.license_plate, v.vehicle_type
 ORDER BY d.avg_rating DESC, d.total_trips DESC;
 
