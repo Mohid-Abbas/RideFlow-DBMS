@@ -8,25 +8,56 @@
     <script>
         // Fetch API key from server and load Google Maps dynamically
         async function loadGoogleMaps() {
+            const notice = document.getElementById('apiNotice');
+            
             try {
+                notice.innerHTML = '🔄 Fetching API key from server...';
+                
                 const res = await fetch('/api/config/maps-key');
-                if (!res.ok) throw new Error('Failed to load API key');
-                const { apiKey } = await res.json();
+                
+                if (!res.ok) {
+                    if (res.status === 401) {
+                        throw new Error('Not logged in. Please login first.');
+                    }
+                    const errorData = await res.json();
+                    throw new Error(errorData.error || `Server error: ${res.status}`);
+                }
+                
+                const data = await res.json();
+                
+                if (!data.apiKey) {
+                    throw new Error('API key not found in server response');
+                }
+                
+                notice.innerHTML = '✅ API key received. Loading Google Maps...';
                 
                 // Create script tag with API key
                 const script = document.createElement('script');
-                script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&libraries=places&callback=initMap`;
                 script.async = true;
                 script.defer = true;
+                
+                // Handle script load error
+                script.onerror = () => {
+                    notice.innerHTML = '⚠️ Failed to load Google Maps script. Check API key validity.';
+                    notice.style.background = '#f8d7da';
+                    notice.style.color = '#721c24';
+                };
+                
                 document.head.appendChild(script);
                 
-                // Hide API key notice
-                document.getElementById('apiNotice').style.display = 'none';
+                // Hide notice after successful load (initMap will be called)
+                setTimeout(() => {
+                    if (typeof google !== 'undefined') {
+                        notice.style.display = 'none';
+                    }
+                }, 2000);
+                
             } catch (error) {
                 console.error('Error loading Google Maps:', error);
-                document.getElementById('apiNotice').innerHTML = '⚠️ Error loading Google Maps API. Please check configuration.';
-                document.getElementById('apiNotice').style.background = '#f8d7da';
-                document.getElementById('apiNotice').style.color = '#721c24';
+                notice.innerHTML = `⚠️ ${error.message}<br><small>Check console for details</small>`;
+                notice.style.background = '#f8d7da';
+                notice.style.color = '#721c24';
             }
         }
         
