@@ -2,7 +2,7 @@
 -- Run this after creating the database schema
 -- NOTE: This file uses DELETE + INSERT pattern to allow re-running without errors
 
-USE rideflow_db;
+USE databaseProject_db;
 
 -- ============================================
 -- CLEAR EXISTING DATA (for clean re-runs)
