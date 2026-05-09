@@ -4,8 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book a Ride - RideFlow (Google Maps)</title>
-    <!-- Replace YOUR_API_KEY with your actual Google Maps API Key -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initMap" async defer></script>
+    <!-- Google Maps API Key loaded securely from server -->
+    <script>
+        // Fetch API key from server and load Google Maps dynamically
+        async function loadGoogleMaps() {
+            try {
+                const res = await fetch('/api/config/maps-key');
+                if (!res.ok) throw new Error('Failed to load API key');
+                const { apiKey } = await res.json();
+                
+                // Create script tag with API key
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
+                script.async = true;
+                script.defer = true;
+                document.head.appendChild(script);
+                
+                // Hide API key notice
+                document.getElementById('apiNotice').style.display = 'none';
+            } catch (error) {
+                console.error('Error loading Google Maps:', error);
+                document.getElementById('apiNotice').innerHTML = '⚠️ Error loading Google Maps API. Please check configuration.';
+                document.getElementById('apiNotice').style.background = '#f8d7da';
+                document.getElementById('apiNotice').style.color = '#721c24';
+            }
+        }
+        
+        // Load Google Maps after page loads
+        window.addEventListener('load', loadGoogleMaps);
+    </script>
     <style>
         * {
             margin: 0;
@@ -365,7 +392,7 @@
 
         <div class="map-container">
             <div class="api-key-notice" id="apiNotice">
-                ⚠️ Replace "YOUR_API_KEY" in the script tag with your Google Maps API Key
+                🔄 Loading Google Maps API securely...
             </div>
             <div id="map"></div>
         </div>
