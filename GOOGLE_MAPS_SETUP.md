@@ -38,24 +38,44 @@ This guide helps you integrate real Google Maps API for location search, route c
 
 ---
 
-## Step 2: Add API Key to Project
+## Step 2: Securely Add API Key (REQUIRED - Do Not Hardcode!)
 
-### 2.1 Update HTML File
-Open `app/public/rider/book-with-maps.html`:
+### ⚠️ IMPORTANT: Never Hardcode API Keys in HTML
 
+**❌ BAD (Exposes key on GitHub):**
 ```html
-<!-- Replace this line -->
-<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initMap" async defer></script>
-
-<!-- With your actual key -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB...YOUR_KEY...&libraries=places&callback=initMap" async defer></script>
+<!-- NEVER DO THIS -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB...&libraries=places" async defer></script>
 ```
 
-### 2.2 Alternative: Use Environment Variable (Recommended for Production)
-Add to `.env`:
+**✅ GOOD (Secure via Environment Variable):**
+
+### 2.1 Add API Key to .env File
+
+Open `app/.env` and add:
 ```
 GOOGLE_MAPS_API_KEY=AIzaSyB...YOUR_KEY...
 ```
+
+**⚠️ Never commit .env to GitHub!** (It's already in .gitignore)
+
+### 2.2 How It Works (Security Flow)
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   Browser       │────▶│   Your Server   │────▶│   Google Maps   │
+│                 │     │                 │     │                 │
+│ Fetches key via │     │ Reads from .env │     │ Validates key   │
+│ /api/config/    │     │ Only to logged  │     │                 │
+│ maps-key        │     │ in users        │     │                 │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+```
+
+**Security Features:**
+- ✅ API key stored in `.env` (not in code)
+- ✅ Key only served to authenticated users
+- ✅ Key never exposed in HTML/frontend
+- ✅ Protected from GitHub exposure
 
 ---
 
@@ -200,10 +220,19 @@ ngrok http 3000
 
 ## Next Steps
 1. ✅ Get your API key from Google Cloud
-2. ✅ Replace `YOUR_API_KEY` in `book-with-maps.html`
+2. ✅ Add `GOOGLE_MAPS_API_KEY` to `app/.env` (NOT in HTML!)
 3. ✅ Test at http://localhost:3000/rider/book-with-maps
 4. ✅ Deploy using ngrok or Render
 5. ✅ Present your project with real Google Maps!
+
+## Security Checklist
+
+Before pushing to GitHub, verify:
+- [ ] API key is in `.env` file only
+- [ ] `.env` is in `.gitignore`
+- [ ] No API key in any HTML/JS files
+- [ ] Server endpoint `/api/config/maps-key` requires authentication
+- [ ] API key has HTTP referrer restrictions in Google Cloud Console
 
 ---
 
