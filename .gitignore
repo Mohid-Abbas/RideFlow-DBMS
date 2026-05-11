@@ -481,3 +481,10 @@ FodyWeavers.xsd
 *.sln.iml
 app/.env
 app/.env
+app/RideFlow-v1.0.zip
+Build-Now.ps1
+FRIEND_SETUP_GUIDE.md
+Build-Executable.bat
+SETUP.bat
+SHARE_WITH_FRIEND.md
+VERCEL_DEPLOYMENT.md
