@@ -16,6 +16,7 @@ const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const fs = require('fs');
 const path = require('path');
+const open = require('open');
 require('dotenv').config();
 
 const app = express();
@@ -814,6 +815,18 @@ app.listen(PORT, async () => {
     console.log(`  - Driver Dashboard: http://localhost:${PORT}/driver/dashboard`);
     console.log(`  - Admin Dashboard: http://localhost:${PORT}/admin/dashboard`);
     console.log(`=================================`);
+    
+    // Auto-open browser if AUTO_OPEN_BROWSER is not set to false
+    if (process.env.AUTO_OPEN_BROWSER !== 'false') {
+        console.log(`  🌐 Opening browser...`);
+        try {
+            await open(`http://localhost:${PORT}/`);
+            console.log(`  ✅ Browser opened!`);
+        } catch (err) {
+            console.log(`  ⚠️  Could not open browser automatically`);
+            console.log(`     Please open http://localhost:${PORT}/ manually`);
+        }
+    }
 });
 
 module.exports = app;
