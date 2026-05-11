@@ -43,11 +43,14 @@ const dbConfig = {
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 3306,
     user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
+    password: process.env.DB_PASSWORD || '123456',
     database: process.env.DB_NAME || 'rideflow_db',
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0
+    queueLimit: 0,
+    ssl: process.env.DB_SSL === 'true' ? {
+        rejectUnauthorized: false  // For Aiven
+    } : undefined
 };
 
 // Add SSL for cloud databases (Aiven, PlanetScale, etc.)
