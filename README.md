@@ -1,52 +1,77 @@
 # RideFlow-DBMS
 
-RideFlow-DBMS is a professional, MySQL-backed database management system designed for a modern ride-hailing platform. It demonstrates advanced relational database design, secure role-based access control, trip tracking, fare computation, and fleet validation — all built as a capstone project for the Spring 2026 Database Systems Lab.
+## Brief Overview
 
-## Overview
+RideFlow-DBMS is a professional MySQL database solution built for a ride-hailing platform. It includes role-based access control, ride tracking, fare calculation, driver and vehicle verification, and reporting. This project demonstrates practical database design, data integrity, and deployment readiness.
 
-This repository contains the complete database schema, seed data, deployment support files, and a sample front-end application for managing riders, drivers, vehicles, rides, payments, and reporting.
+## Full Detailed Documentation
 
-## Key Features
+### Project Summary
 
-- Role-based access control for riders, drivers, and administrators
-- Real-time ride and booking management
-- Automated fare calculation with distance, time, and surge pricing logic
-- Driver and vehicle verification workflows
-- Reporting and analytics for revenue, rides, and performance
-- Clean MySQL schema design and sample seed data for fast setup
+RideFlow-DBMS is a complete database management system for a ride-hailing service. It models riders, drivers, vehicles, trips, payments, and administration workflows. The repository includes SQL scripts to create the database, define the relational schema, and load sample data. A sample application front-end is provided to illustrate how the database can support user interactions.
 
-## Technologies
+### Core Features
 
-- MySQL / MariaDB
-- SQL schema and data scripts
-- Node.js / Express (sample application layer)
-- HTML/CSS front-end interfaces for riders, drivers, and admins
+- Role-based access control (RBAC) for riders, drivers, and administrators
+- Comprehensive ride lifecycle management including booking, dispatch, and completion
+- Dynamic fare calculation using distance, duration, and surge pricing logic
+- Driver and vehicle verification processes for compliance and safety
+- Reporting and analytics for revenue, trip volume, and platform performance
+- Secure relational design with foreign key constraints, indexing, and normalized tables
 
-## Repository Contents
+### Architecture & Technology
 
-- `databaseProject_db.sql` — primary database creation script
-- `rideflow_relational_schema.sql` — relational schema definitions
-- `rideflow_seed_data.sql` — sample data for development and testing
-- `app/` — sample application and UI pages
-- `SETUP.bat`, `Build-Executable.bat`, `Build-Now.ps1` — automation support scripts
+- Database: MySQL / MariaDB
+- Schema: SQL DDL scripts for tables, constraints, and relationships
+- Seed data: SQL insert scripts for sample users, drivers, vehicles, rides, and payments
+- Sample app: Node.js / Express support files and HTML/CSS interfaces for multiple roles
+- Deployment helpers: batch scripts and PowerShell automation for setup and build processes
 
-## Getting Started
+### Repository Structure
 
-1. Install MySQL or MariaDB.
-2. Create a new database and run `databaseProject_db.sql`.
-3. Load sample data with `rideflow_seed_data.sql`.
-4. Review the schema in `rideflow_relational_schema.sql`.
-5. Launch the sample app in `app/` if desired.
+- `databaseProject_db.sql` — complete database creation script including database, tables, constraints, and initial setup
+- `rideflow_relational_schema.sql` — relational schema definitions and design documentation
+- `rideflow_seed_data.sql` — sample development data for riders, drivers, rides, vehicles, and payments
+- `app/` — sample application layer and UI pages for riders, drivers, and administrators
+- `SETUP.bat`, `Build-Executable.bat`, `Build-Now.ps1` — automation and build scripts
+- `README.md` — project overview, setup, and documentation
 
-## Professional Highlights
+### Setup Instructions
 
-- Designed for maintainability and extensibility
-- Demonstrates strong understanding of database normalization, indexing, and integrity constraints
-- Includes role-based workflows for real-world ride-hailing operations
-- Supports analytics-ready reporting for business decision-making
+1. Install MySQL or MariaDB on your local machine.
+2. Open your MySQL client and create a new database instance.
+3. Execute `databaseProject_db.sql` to create the database and schema.
+4. Import `rideflow_seed_data.sql` to populate the database with sample records.
+5. Review `rideflow_relational_schema.sql` to understand the table relationships and data model.
+6. Explore the `app/` directory for sample UI pages and server support files.
 
-## Contact
+### Usage Notes
+
+- Use the administrator pages to manage drivers, vehicles, and fare rules.
+- Test rider booking flows with the rider dashboard and trip booking pages.
+- Verify driver workflows through the driver dashboard and ride history screens.
+- Analyze revenue and trip performance using the reporting pages.
+
+### Professional Value
+
+RideFlow-DBMS showcases strong database architecture skills, including:
+
+- Scalable and maintainable relational schema design
+- Practical application of integrity constraints and normalization
+- Real-world ride-hailing workflows with role-based security
+- Support for analytics-ready reporting and operational monitoring
+
+### Contact & Professional Profile
 
 Muhammad Mohid Abbas
 
 LinkedIn: https://www.linkedin.com/in/muhammad-mohid-abbas/
+
+---
+
+## Quick Reference
+
+- Project: RideFlow-DBMS
+- Domain: Ride-hailing database management
+- Primary tools: MySQL, SQL, Node.js, HTML/CSS
+- Goal: Build a production-ready database solution for ride-sharing operations
